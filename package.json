@@ -1,0 +1,33 @@
+{
+  "name": "bridge",
+  "description": "Duplicate bridge apps and packages",
+  "version": "0.0.0",
+  "author": "Chris Book",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bookchris/bridge"
+  },
+  "scripts": {
+    "type:check": "turbo run type:check",
+    "build": "turbo run build",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.1",
+    "prettier-plugin-jsdoc": "^1.1.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4"
+  },
+  "workspaces": [
+    "./apps/ui",
+    "packages/api",
+    "packages/core",
+    "packages/storage"
+  ]
+}
