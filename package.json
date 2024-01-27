@@ -9,12 +9,6 @@
     "url": "https://github.com/bookchris/bridge"
   },
   "scripts": {
-    "type:check": "turbo run type:check",
-    "build": "turbo run build",
-    "clean": "turbo run clean",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
     "format": "prettier --write ."
   },
   "devDependencies": {
@@ -25,7 +19,8 @@
     "vitest": "^1.0.4"
   },
   "workspaces": [
-    "./apps/ui",
+    "apps/importer",
+    "apps/ui",
     "packages/api",
     "packages/core",
     "packages/storage"
