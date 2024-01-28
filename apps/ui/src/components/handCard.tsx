@@ -1,3 +1,4 @@
+import { StoredHand } from "@bridge/storage";
 import {
   Box,
   Card,
@@ -7,7 +8,6 @@ import {
   useTheme,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { StoredHand } from "../../functions/storage/hand";
 import { MiniBoard } from "./board/board";
 
 export interface HandCardProps extends CardProps {

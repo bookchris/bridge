@@ -1,6 +1,6 @@
 import { Hand } from "@bridge/core";
 
-export class StoredHand extends Hand {
+export class Table extends Hand {
   readonly id: string;
   readonly uids: string[];
   readonly created?: Date;

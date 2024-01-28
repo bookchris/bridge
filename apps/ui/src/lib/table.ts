@@ -1,14 +1,20 @@
+import {
+  TableBidRequest,
+  TableBidResponse,
+  TablePlayRequest,
+  TablePlayResponse,
+} from "@bridge/api";
 import { Bid, Card, Hand, HandJson } from "@bridge/core";
 import { ref } from "firebase/database";
 import {
-  collection,
-  doc,
   DocumentData,
   FirestoreDataConverter,
-  query,
   QueryDocumentSnapshot,
   SnapshotOptions,
   Timestamp,
+  collection,
+  doc,
+  query,
   where,
 } from "firebase/firestore";
 import { useCallback } from "react";
@@ -17,12 +23,6 @@ import {
   useCollectionData,
   useDocumentData,
 } from "react-firebase-hooks/firestore";
-import {
-  TableBidRequest,
-  TableBidResponse,
-  TablePlayRequest,
-  TablePlayResponse,
-} from "../../functions/api/table";
 import { database, firestore, functions } from "./firebase";
 import useCallable, { HttpsCallableHook } from "./useCallable";
 import { useUserContext } from "./user";

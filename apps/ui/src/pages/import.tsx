@@ -1,10 +1,7 @@
+import { ImportHandRequest, ImportHandResponse } from "@bridge/api";
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ImportHandRequest,
-  ImportHandResponse,
-} from "../../functions/api/import";
 import AuthCheck from "../components/authCheck";
 import { functions } from "../lib/firebase";
 import useCallable from "../lib/useCallable";
