@@ -1,4 +1,5 @@
 import type { PlasmoCSConfig } from "plasmo";
+import { app, auth } from "~firebase";
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.bridgebase.com/*"],
@@ -6,16 +7,18 @@ export const config: PlasmoCSConfig = {
 
 window.addEventListener("load", () => {
   document.body.style.background = "pink";
+  console.log("Initialized Firebase!", app);
+  console.log("current user", auth.currentUser);
 });
 
 interface TextEventDetails {
   text: string;
 }
 
-document.addEventListener("hand", (e: CustomEvent) => {
+document.addEventListener("hand", (e: Event) => {
   try {
-    const detail = e.detail as TextEventDetails;
-    const { text } = detail;
+    const textEvent = e as CustomEvent<TextEventDetails>;
+    const text = textEvent.detail.text;
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(text, "application/xml");

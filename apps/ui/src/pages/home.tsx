@@ -1,3 +1,4 @@
+import { CreateTableRequest, CreateTableResponse } from "@bridge/api";
 import {
   Box,
   Button,
@@ -12,10 +13,6 @@ import {
 import { useSnackbar } from "notistack";
 import { useErrorHandler } from "react-error-boundary";
 import { useNavigate } from "react-router-dom";
-import {
-  CreateTableRequest,
-  CreateTableResponse,
-} from "../../functions/api/table";
 import AuthCheck from "../components/authCheck";
 import { CardStack } from "../components/cardStack";
 import { HandCard } from "../components/handCard";
