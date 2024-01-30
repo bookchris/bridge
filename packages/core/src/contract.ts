@@ -15,7 +15,10 @@ export class Contract {
   complete: boolean;
   passed: boolean;
 
-  constructor(readonly bids: Bid[], private dealer: Seat) {
+  constructor(
+    readonly bids: Bid[],
+    private dealer: Seat
+  ) {
     const firstMap = [new Map<Suit, Seat>(), new Map<Suit, Seat>()];
 
     bids.forEach((bid, i) => {
@@ -58,6 +61,20 @@ export class Contract {
     }
     if (this.redoubled) {
       return result + " Redoubled";
+    }
+    return result;
+  }
+
+  toShortString() {
+    if (!this.complete) return "";
+    if (this.suitBid === undefined) return "Passed";
+
+    const result = `${this.suitBid.toString()}${this.declarer?.toChar()}`;
+    if (this.doubled) {
+      return result + "X";
+    }
+    if (this.redoubled) {
+      return result + "XX";
     }
     return result;
   }

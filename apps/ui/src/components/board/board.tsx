@@ -21,6 +21,7 @@ import { usePosition } from "./position";
 import { ScoreBox } from "./scoreBox";
 import { ScoreGraph } from "./scoreGraph";
 import { Trick } from "./trick";
+import { TricksCard } from "./tricksCard";
 
 interface BoardContextType {
   hand: Hand;
@@ -84,7 +85,6 @@ export function Board({ hand, live, playingAs }: BoardProps) {
   const right = (
     <>
       <Controls hand={hand} position={position} setPosition={setPosition} />
-      <ContractCard />
       <BiddingCard hand={hand} position={position} />
       {!hand.isBidding && <Play hand={hand} position={position} />}
     </>
@@ -141,6 +141,8 @@ export function Board({ hand, live, playingAs }: BoardProps) {
               <PlayerBox seat={Seat.North} />
               <PlayerBox seat={Seat.East} />
               <PlayerBox seat={Seat.West} />
+              <ContractCard />
+              <TricksCard />
               {!readOnly && handAt.state === HandState.Bidding && (
                 <BidBox hand={handAt} seat={playingAs} />
               )}

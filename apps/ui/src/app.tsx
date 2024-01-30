@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@emotion/react";
 import { Box, CssBaseline } from "@mui/material";
 import { SnackbarProvider } from "notistack";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
 import NavBar from "./components/navBar";
 import { UserContextProvider } from "./lib/user";
 import HandPage from "./pages/hand";
@@ -26,7 +26,10 @@ const Header = () => (
             width: "100%",
           }}
         >
-          <Box component="main" sx={{ width: "100%", maxWidth: 900 }}>
+          <Box
+            component="main"
+            sx={{ width: "100%", maxWidth: 900, mt: { md: 2 } }}
+          >
             <Outlet />
           </Box>
         </Box>
