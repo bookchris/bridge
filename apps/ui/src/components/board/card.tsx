@@ -10,8 +10,8 @@ const CardImage = styled("img")({
 export const useCardSize = () => {
   const { width } = useBoardContext();
   return {
-    width: width / 9.3,
-    height: width / 6,
+    width: width / 8.6,
+    height: width / 5.7,
   };
 };
 

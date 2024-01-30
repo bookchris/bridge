@@ -7,7 +7,6 @@ import {
   MenuItem,
   Paper,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import {
   Dispatch,
@@ -76,9 +75,6 @@ export function Controls({ hand, position, setPosition }: ControlsProps) {
 
   return (
     <Paper square>
-      <Paper square elevation={0} sx={{ backgroundColor: "secondary.main" }}>
-        <Typography sx={{ p: 1, color: "white" }}>Controls</Typography>
-      </Paper>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Tooltip title="Hand start">
           <span>
