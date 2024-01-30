@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "source": "./isolate",
+    "runtime": "nodejs20",
+    "predeploy": ["npm run build", "isolate"],
+    "codebase": "ui"
+  },
+  "emulators": {
+    "ui": {
+      "enabled": true
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    }
+  }
+}
