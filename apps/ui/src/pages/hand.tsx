@@ -14,5 +14,5 @@ export default function HandPage() {
 
   if (loading) return <Loading />;
   if (!hand) return <Alert severity="error">hand ${handId} not found</Alert>;
-  return <Board hand={hand} />;
+  return <Board analysis hand={hand} />;
 }

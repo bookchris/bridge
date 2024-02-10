@@ -12,6 +12,7 @@ export const useCardSize = () => {
   return {
     width: width / 8.6,
     height: width / 5.7,
+    radius: width / 400,
   };
 };
 
@@ -40,7 +41,7 @@ export function PlayingCard({
   onClick,
   ...paperProps
 }: PlayingCardProps) {
-  const { width, height } = useCardSize();
+  const { width, height, radius } = useCardSize();
   const paperSxProps = {
     [Orientation.None]: { width: width, height: height },
     [Orientation.Left]: { width: height, height: width },
@@ -59,11 +60,14 @@ export function PlayingCard({
         justifyContent: "center",
         backgroundColor: selected ? "grey.300" : "white",
         fontSize: width / 6,
-        borderRadius: 2,
+        borderRadius: radius,
         boxShadow: 1,
         ...paperSxProps[orientation],
         ...paperProps?.sx,
         cursor: enabled ? "pointer" : undefined,
+        "&:hover": {
+          border: "2px solid",
+        },
       }}
     >
       {faceUp ? (
@@ -73,7 +77,7 @@ export function PlayingCard({
             <CornerText sx={{ color: color }}>
               {card.suit.toString()}
             </CornerText>
-            {dds !== undefined && <DdsText>{dds}</DdsText>}
+            {dds !== undefined && <DdsText>{dds == 0 ? "E" : dds}</DdsText>}
           </Box>
           <Box
             sx={{

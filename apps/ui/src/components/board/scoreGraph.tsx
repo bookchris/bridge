@@ -1,6 +1,12 @@
 import { Hand } from "@bridge/core";
 import { Paper, Typography } from "@mui/material";
-import { ComponentProps, Dispatch, SetStateAction, useMemo } from "react";
+import {
+  ComponentProps,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import {
   Dot,
   Line,
@@ -15,7 +21,7 @@ import {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { handToDdsMax } from "../../lib/useDds";
+import { useDds } from "../../lib/useDds";
 
 interface Payload {
   label: string;
@@ -77,20 +83,25 @@ export function ScoreGraph({ hand }: ScoreGraphProps) {
 */
 
 export function ScoreGraph({ hand, position, setPosition }: ScoreGraphProps) {
-  const data = useMemo(() => {
-    const d = [] as Payload[];
-    for (
-      let pos = hand.bidding.length;
-      pos < hand.bidding.length + hand.play.length;
-      pos++
-    ) {
-      const handAt = hand.atPosition(pos);
-      const card = handAt.play.at(-1)?.toString() || "none";
-      const score = handToDdsMax(handAt);
-      d.push({ label: card, score, position: pos });
-    }
-    d[0].label = hand.contract.toString();
-    return d;
+  const dds = useDds();
+  const [data, setData] = useState<Payload[]>();
+  useEffect(() => {
+    const d: Payload[] = [];
+    const queryAll = async () => {
+      for (
+        let pos = hand.bidding.length;
+        pos < hand.bidding.length + hand.play.length;
+        pos++
+      ) {
+        const handAt = hand.atPosition(pos);
+        const card = handAt.play.at(-1)?.toString() || "none";
+        const score = await dds.handToDdsMax(handAt);
+        d.push({ label: card, score, position: pos });
+      }
+      d[0].label = hand.contract.toString();
+      return d;
+    };
+    queryAll().then(setData);
   }, [hand]);
   return (
     <Paper square>
