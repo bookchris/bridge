@@ -109,6 +109,7 @@ function MyTables() {
   useErrorHandler(error);
 
   if (!tables) return <Loading />;
+  if (!tables.length) return <></>;
   return (
     <div>
       <SectionHeader>Continue your games</SectionHeader>

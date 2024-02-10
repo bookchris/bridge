@@ -27,7 +27,12 @@ export function useDds(hand: Hand): Solution | undefined {
   return useMemo(() => handToDds(hand), [hand]);
 }
 
+export function useDdsMax(hand: Hand): number | undefined {
+  return useMemo(() => handToDdsMax(hand), [hand]);
+}
+
 export function handToDds(hand: Hand): Solution | undefined {
+  if (!nextPlays) return undefined;
   if (!hand.isPlaying) {
     return undefined;
   }

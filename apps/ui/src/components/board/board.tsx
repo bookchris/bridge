@@ -1,4 +1,4 @@
-import { Hand, HandState, Seat } from "@bridge/core";
+import { Card, Hand, HandState, Seat } from "@bridge/core";
 import { Box, Paper, useMediaQuery, useTheme } from "@mui/material";
 import useSize from "@react-hook/size";
 import {
@@ -15,6 +15,7 @@ import { BiddingCard } from "./biddingCard";
 import { ContractCard } from "./contractCard";
 import { Controls } from "./controls";
 import { Holding } from "./holding";
+import { LinesCard } from "./linesCard";
 import { Play } from "./playCard";
 import { PlayerBox } from "./playerBox";
 import { usePosition } from "./position";
@@ -27,10 +28,13 @@ interface BoardContextType {
   hand: Hand;
   position: number;
   setPosition: Dispatch<SetStateAction<number>>;
+  variation: Card[];
+  setVariation: Dispatch<SetStateAction<Card[]>>;
   handAt: Hand;
   width: number;
   scale: number;
   live: boolean;
+  analysis: boolean;
 }
 
 const BoardContext = createContext({} as BoardContextType);
@@ -45,8 +49,8 @@ export interface BoardProps {
   playingAs?: Seat;
 }
 
-export function Board({ hand, live, playingAs }: BoardProps) {
-  const { position, setPosition } = usePosition(hand);
+export function Board({ hand, live, analysis, playingAs }: BoardProps) {
+  const { position, setPosition, variation, setVariation } = usePosition(hand);
   const readOnly = position !== hand.positions || !live || !playingAs;
 
   const theme = useTheme();
@@ -57,7 +61,16 @@ export function Board({ hand, live, playingAs }: BoardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [width] = useSize(ref);
 
-  const handAt = useMemo(() => hand.atPosition(position), [hand, position]);
+  const handAt = useMemo(() => {
+    let h = hand.atPosition(position);
+    for (const card of variation) {
+      const newH = h.doPlay(card);
+      if (newH) {
+        h = newH;
+      }
+    }
+    return h;
+  }, [hand, position, variation]);
   const nextCard = useMemo(() => {
     const next = position + 1;
     if (next < hand.positions) {
@@ -74,8 +87,11 @@ export function Board({ hand, live, playingAs }: BoardProps) {
       handAt,
       playingAs,
       live: !!live,
+      analysis: !!analysis,
       position,
       setPosition,
+      variation,
+      setVariation,
     }),
     [width, hand, handAt, playingAs, live, position, setPosition]
   );
@@ -86,6 +102,7 @@ export function Board({ hand, live, playingAs }: BoardProps) {
     <>
       <Controls hand={hand} position={position} setPosition={setPosition} />
       <BiddingCard hand={hand} position={position} />
+      {!hand.isBidding && <LinesCard hand={hand} position={position} />}
       {!hand.isBidding && <Play hand={hand} position={position} />}
     </>
   );
@@ -190,15 +207,18 @@ export function Board({ hand, live, playingAs }: BoardProps) {
 export interface MiniBoardProps {
   hand: Hand;
   live?: boolean;
+  analysis?: boolean;
   onClick?: () => void;
 }
 
 export function MiniBoard({
   hand,
   live,
+  analysis,
   onClick = () => null,
 }: MiniBoardProps) {
   const width = 250;
+  const height = 212;
   const value = useMemo(
     () => ({
       width: width,
@@ -207,7 +227,10 @@ export function MiniBoard({
       handAt: hand,
       position: hand.positions,
       setPosition: () => null,
+      variation: [],
+      setVariation: () => null,
       live: !!live,
+      analysis: !!analysis,
     }),
     [hand, live]
   );
@@ -218,7 +241,7 @@ export function MiniBoard({
       sx={{
         backgroundColor: "#378B05",
         width: `${width}px`,
-        height: `${width}px`,
+        height: `${height}px`,
         position: "relative",
         cursor: "pointer",
       }}
