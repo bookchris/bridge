@@ -5,6 +5,7 @@ import {
   doc,
   DocumentData,
   FirestoreDataConverter,
+  orderBy,
   query,
   QueryDocumentSnapshot,
   SnapshotOptions,
@@ -47,7 +48,8 @@ export function useHandList(uid: string) {
   const ref = uid
     ? query(
         collection(firestore, "hands").withConverter(handConverter),
-        where("uids", "array-contains", uid)
+        where("uids", "array-contains", uid),
+        orderBy("created", "desc")
       )
     : null;
   return useCollectionData<StoredHand>(ref);

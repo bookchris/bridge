@@ -117,6 +117,10 @@ export class Hand {
     );
   }
 
+  getSeatPlayer(seat: Seat) {
+    return this.players[seat.index()];
+  }
+
   get north() {
     return this.getHolding(Seat.North);
   }
@@ -456,16 +460,16 @@ export class Hand {
     });
   }
 
-  canPlay(card: Card, seat: Seat) {
+  canPlay(card: Card, seat?: Seat) {
     if (!this.isPlaying) return false;
 
     const player = this.player;
     if (!player) return false;
 
-    if (this.isDummy(player)) {
+    if (seat && this.isDummy(player)) {
       seat = seat.partner();
     }
-    if (player != seat) return false;
+    if (seat && player != seat) return false;
 
     const holding = this.getHolding(player);
     if (!holding.find((c) => c.id === card.id)) return false;
@@ -482,10 +486,38 @@ export class Hand {
     return true;
   }
 
-  doPlay(card: Card, seat: Seat): Hand | undefined {
+  tryPlay(card: Card, seat?: Seat) {
+    if (!this.isPlaying) throw new Error("hand is not in playing state");
+
+    const player = this.player;
+    if (!player) throw new Error("hand has no active player");
+
+    if (seat && this.isDummy(player)) {
+      seat = seat.partner();
+    }
+    if (seat && player != seat) throw new Error(`it is not ${seat}'s turn`);
+
+    const holding = this.getHolding(player);
+    if (!holding.find((c) => c.id === card.id))
+      return `${seat} does not have card ${card}`;
+
+    const lastTrick = this.tricks.at(-1);
+    if (lastTrick && !lastTrick.complete) {
+      const lead = lastTrick.cards[0];
+      if (
+        card.suit !== lead.suit &&
+        holding.filter((c) => c.suit === lead.suit).length
+      )
+        return "must follow suit";
+    }
+    return;
+  }
+
+  doPlay(card: Card, seat?: Seat): Hand | undefined {
     if (!this.canPlay(card, seat)) {
       return undefined;
     }
+    //this.tryPlay(card, seat);
     return new Hand({
       ...this,
       play: [...this.play, card],

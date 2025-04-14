@@ -1,5 +1,6 @@
 import { Card, Seat } from "@bridge/core";
 import { Box } from "@mui/material";
+import { useCallback } from "react";
 import { Solution } from "../../lib/useDds";
 import { useBoardContext } from "./board";
 import { PlayingCard } from "./card";
@@ -12,13 +13,22 @@ export interface HoldingProps {
 }
 
 export function Holding({ seat, nextCard, dds }: HoldingProps) {
-  const { width, hand, handAt, live } = useBoardContext();
+  const { width, hand, handAt, live, variation, setVariation } =
+    useBoardContext();
   const { play, playingAs } = useTableContext();
   const margin = width / 13;
   const cards = handAt.getHolding(seat);
 
   const isPlayer = playingAs === seat;
   const isDummy = handAt.isDummy(seat);
+
+  const onClick = useCallback((card: Card) => {
+    if (play) {
+      play(card);
+    } else {
+      setVariation((list) => [...list, card]);
+    }
+  }, []);
 
   const paperSx = {
     [Seat.West.toString()]: {
@@ -52,11 +62,15 @@ export function Holding({ seat, nextCard, dds }: HoldingProps) {
         <PlayingCard
           dds={dds?.[card.id]}
           selected={nextCard?.id === card.id}
-          enabled={playingAs && hand.canPlay(card, playingAs)}
+          enabled={
+            !live
+              ? handAt.canPlay(card)
+              : playingAs && handAt.canPlay(card, playingAs)
+          }
           faceUp={!live || isPlayer || isDummy}
           key={card.id}
           card={card}
-          onClick={() => play?.(card)}
+          onClick={() => onClick(card)}
           sx={{ ml: `-${margin}px` }}
         />
       ))}
