@@ -1,10 +1,10 @@
-import { Hand, Seat, Trick } from "@bridge/core";
+import { Hand, Trick } from "@bridge/core";
 import {
+  Box,
   Paper,
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -43,57 +43,34 @@ export function Play({ hand, position }: PlayProps) {
         <Typography sx={{ p: 1, color: "white" }}>Play</Typography>
       </Paper>
       <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell align="center">West</TableCell>
-            <TableCell align="center">North</TableCell>
-            <TableCell align="center">East</TableCell>
-            <TableCell align="center">South</TableCell>
-          </TableRow>
-        </TableHead>
         <TableBody>
-          {tricks.map((trick, i) => {
-            const cols = trick.cards.map((card, j) => (
-              <TableCell
-                key={card.id}
-                onClick={() => setPosition(i * 4 + j + hand.bidding.length)}
-                align="center"
-                sx={{
-                  backgroundColor:
-                    i * 4 + j === highlighted ? "grey.300" : undefined,
-                  cursor: "pointer",
-                }}
-              >
-                <CardText card={card} />
+          {tricks.map((trick, i) => (
+            <TableRow key={i}>
+              <TableCell align="left" sx={{ display: "flex", gap: 1 }}>
+                <Box sx={{ width: "50%" }}>{i + 1}</Box>
+                <Box sx={{ width: "50%" }}>{trick.leader.toChar()}</Box>
               </TableCell>
-            ));
-            cols.push(
-              ...Array(cols.length === 4 ? 0 : 1).fill(
+              {trick.cards.map((card, j) => (
                 <TableCell
-                  key="blank"
+                  key={card.id}
+                  onClick={() => setPosition(i * 4 + j + hand.bidding.length)}
+                  align="center"
                   sx={{
                     backgroundColor:
-                      i * 4 + cols.length === highlighted
-                        ? "grey.300"
-                        : undefined,
+                      i * 4 + j === highlighted ? "grey.300" : undefined,
+                    cursor: "pointer",
                   }}
                 >
-                  &nbsp;
+                  <CardText card={card} />
                 </TableCell>
-              )
-            );
-            cols.push(
-              ...Array(4 - cols.length).map((_, i) => (
-                <TableCell key={"fill" + i}>&nbsp;</TableCell>
-              ))
-            );
-            let player = Seat.West;
-            while (player != trick.leader) {
-              cols.unshift(cols.pop()!);
-              player = player.next();
-            }
-            return <TableRow key={i}>{cols}</TableRow>;
-          })}
+              ))}
+              {Array(4 - trick.cards.length)
+                .fill(0)
+                .map((_, i) => (
+                  <TableCell key={"fill" + i}>&nbsp;</TableCell>
+                ))}
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </Paper>

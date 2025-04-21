@@ -9,7 +9,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useDdsMax } from "../lib/useDds";
 import { MiniBoard } from "./board/board";
 import { useNavigateToHand } from "./board/position";
 import { ResultText } from "./board/resultText";
@@ -31,7 +30,6 @@ export function HandCard({ hand, ...cardProps }: HandCardProps) {
     return name.startsWith("~M") ? "Robot" : name;
   };
 
-  const ddsMax = useDdsMax(handAt);
   return (
     <Card sx={{ p: 1, ...cardProps.sx }}>
       <Box sx={{ display: "flex" }}>
@@ -49,11 +47,6 @@ export function HandCard({ hand, ...cardProps }: HandCardProps) {
             {hand.contract.toString()}
             <ResultText result={hand.result} />
           </Typography>
-          {ddsMax !== undefined && (
-            <Typography variant="h6">
-              DDS: <ResultText result={ddsMax} />
-            </Typography>
-          )}
           <Box flexGrow={1} />
           <Typography variant="h6">
             Dummy: {seatString(hand.contract.declarer?.partner())}

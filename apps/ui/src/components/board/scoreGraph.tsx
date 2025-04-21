@@ -35,74 +35,25 @@ export interface ScoreGraphProps {
   setPosition: Dispatch<SetStateAction<number>>;
 }
 
-/*
-
-export function ScoreGraph({ hand }: ScoreGraphProps) {
-  const positions = [] as number[];
-  for (let i = hand.bidding.length; i < hand.play.length; i++) {
-    positions.push(i);
-  }
-  const positionHands = positions.map((p) => hand.atPosition(p));
-  const positionCards = positionHands
-    .map((h) => h.play.at(-1))
-    .map((c) => c?.toString() || "none");
-  const scores = positionHands.map((h) => handToDdsMax(h) || 0);
-  return (
-    <Paper square>
-      <Paper square elevation={0} sx={{ backgroundColor: "secondary.main" }}>
-        <Typography sx={{ p: 1, color: "white" }}>Analysis</Typography>
-      </Paper>
-      <Paper sx={{ width: "100%", height: 200 }}>
-        <ResponsiveChartContainer
-          series={[
-            {
-              type: "line",
-              data: scores,
-              showMark: false,
-              area: true,
-            },
-          ]}
-          xAxis={[
-            {
-              data: positionCards,
-              scaleType: "point",
-              //scaleType: "band",
-              //id: "x-axis-id",
-            },
-          ]}
-        >
-          <LinePlot />
-          <MarkPlot />
-          <ChartsTooltip />
-        </ResponsiveChartContainer>
-      </Paper>
-    </Paper>
-  );
-}
-
-*/
-
 export function ScoreGraph({ hand, position, setPosition }: ScoreGraphProps) {
   const dds = useDds();
   const [data, setData] = useState<Payload[]>();
   useEffect(() => {
-    const d: Payload[] = [];
-    const queryAll = async () => {
-      for (
-        let pos = hand.bidding.length;
-        pos < hand.bidding.length + hand.play.length;
-        pos++
-      ) {
-        const handAt = hand.atPosition(pos);
-        const card = handAt.play.at(-1)?.toString() || "none";
-        const score = await dds.handToDdsMax(handAt);
-        d.push({ label: card, score, position: pos });
-      }
-      d[0].label = hand.contract.toString();
-      return d;
-    };
-    queryAll().then(setData);
+    const need = 6 + hand.contract.suitBid?.level;
+    dds.ddsAnalysePlay(hand).then((analysis) => {
+      setData(
+        analysis?.tricks.map((t, i) => ({
+          label:
+            i == 0
+              ? hand.contract.toString()
+              : hand.play[i - 1].toString() || "none",
+          position: hand.bidding.length + i,
+          score: t - need,
+        }))
+      );
+    });
   }, [hand]);
+
   return (
     <Paper square>
       <Paper square elevation={0} sx={{ backgroundColor: "secondary.main" }}>
@@ -173,7 +124,7 @@ function CustomizedDot(props: CustomizedDotProps) {
 
 function TooltipContent(props: TooltipProps<ValueType, NameType>) {
   const { active, payload, label } = props;
-  if (active && payload && label.length) {
+  if (active && payload && label?.length) {
     return (
       <Paper square sx={{ p: 1.5 }}>
         <Typography>

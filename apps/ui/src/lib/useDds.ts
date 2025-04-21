@@ -1,5 +1,18 @@
-import { Card, Hand, holdingsToPbnDeal } from "@bridge/core";
-import { Dds, FutureTricks } from "bridge-dds";
+import {
+  Card,
+  Hand,
+  holdingsToPbnDeal,
+  Seat,
+  Vulnerability,
+} from "@bridge/core";
+import {
+  Dds,
+  DdTableResults,
+  FutureTricks,
+  ParResultsDealer,
+  SolvedPlay,
+  Vulnerable,
+} from "bridge-dds";
 import * as Comlink from "comlink";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
@@ -10,7 +23,7 @@ class DdsApi {
     })
   );
 
-  async handToDds(hand: Hand): Promise<Solution | undefined> {
+  async ddsSolveHand(hand: Hand): Promise<Solution | undefined> {
     if (!hand.isPlaying) {
       return undefined;
     }
@@ -56,20 +69,11 @@ class DdsApi {
         remainCards: pbn,
       };
       futureTricks = await this.worker.SolveBoardPBN(dealPbn, -1, 3, 2);
-      if (hand.play.length == 1) {
-        console.log(
-          `${hand.play.length}`,
-          JSON.stringify(dealPbn),
-          JSON.stringify(futureTricks)
-        );
-      }
-      console.log();
     } catch (e: unknown) {
       console.log("dds error", e);
-      return {};
+      return undefined;
     }
 
-    //const o = nextPlays(pbn, trump, played);
     const newSolution: Solution = {};
     const relativeScore = (score: number) => {
       const need = level + 6 - declarerTricks;
@@ -95,15 +99,78 @@ class DdsApi {
     return newSolution;
   }
 
-  async handToDdsMax(hand: Hand): Promise<number | undefined> {
-    const solution = await this.handToDds(hand);
-    if (!solution) return undefined;
+  async ddsAnalysePlay(hand: Hand): Promise<PlayAnalysis | undefined> {
+    const handAt = hand.atPosition(hand.bidding.length);
+
+    let leader = hand.openingLeader;
+    if (!leader) return undefined;
+
+    const player = hand.player;
+    if (!player) return undefined;
+
+    const level = hand.contract.suitBid?.level;
+    if (!level) return undefined;
+
+    const trump = hand.contract.suitBid?.suit?.toPbn();
+    if (!trump) return undefined;
+
     const declarer = hand.contract.declarer;
     if (!declarer) return undefined;
-    if (hand.player?.isTeam(declarer)) {
-      return Math.max(...Object.values(solution));
+
+    const pbn = holdingsToPbnDeal(handAt, declarer);
+
+    let solvedPlay: SolvedPlay;
+    try {
+      const dealPbn = {
+        trump: suit_to_dds(trump),
+        first: dir_to_dds(leader.toChar()),
+        currentTrickRank: [],
+        currentTrickSuit: [],
+        remainCards: pbn,
+      };
+      const playTracePbn = {
+        cards: hand.play
+          .map((card) => `${card.suit.toPbn()}${card.rankStr}`)
+          .join(""),
+      };
+      solvedPlay = await this.worker.AnalysePlayPBN(dealPbn, playTracePbn);
+    } catch (e: unknown) {
+      console.log("dds error", e);
+      return undefined;
     }
-    return Math.min(...Object.values(solution));
+
+    return { tricks: solvedPlay.tricks };
+  }
+
+  async ddsCalcTable(hand: Hand): Promise<DoubleDummyTableAndPar | undefined> {
+    const handAt = hand.atPosition(hand.bidding.length);
+    const pbn = holdingsToPbnDeal(handAt, Seat.North);
+
+    let ddTableResults: DdTableResults;
+    let parResultsDealer: ParResultsDealer;
+    try {
+      ddTableResults = await this.worker.CalcDDTablePBN({
+        cards: pbn,
+      });
+      parResultsDealer = await this.worker.DealerPar(
+        ddTableResults,
+        dir_to_dds(hand.dealer.toChar()),
+        vul_to_dds(hand.vulnerability)
+      );
+    } catch (e: unknown) {
+      console.log("dds error", e);
+      return undefined;
+    }
+
+    return {
+      table: Object.fromEntries(
+        ddTableResults.resTable.map((suits, i) => [
+          dds_to_suit(i),
+          Object.fromEntries(suits.map((tricks, j) => [dds_to_dir(j), tricks])),
+        ])
+      ),
+      par: parResultsDealer,
+    };
   }
 }
 
@@ -117,30 +184,26 @@ export interface Solution {
   [id: number]: number;
 }
 
-export function useDdsHand(hand: Hand): Solution | undefined {
+export interface PlayAnalysis {
+  tricks: number[];
+}
+
+export interface DoubleDummyTableAndPar {
+  table: { [suit: string]: { [seat: string]: number } };
+  par: {
+    score: number;
+    contracts: string[];
+  };
+}
+
+export function useDdsSolveHand(hand: Hand): Solution | undefined {
   const api = useDds();
   const [solution, setSolution] = useState<Solution>();
   const current = useRef<Hand>();
   current.current = hand;
   useEffect(() => {
     setSolution(undefined);
-    api.handToDds(hand).then((s) => {
-      if (current.current === hand) {
-        setSolution(s);
-      }
-    });
-  }, [hand]);
-  return solution;
-}
-
-export function useDdsMax(hand: Hand): number | undefined {
-  const api = useDds();
-  const [solution, setSolution] = useState<number>();
-  const current = useRef<Hand>();
-  current.current = hand;
-  useEffect(() => {
-    setSolution(undefined);
-    api.handToDdsMax(hand).then((s) => {
+    api.ddsSolveHand(hand).then((s) => {
       if (current.current === hand) {
         setSolution(s);
       }
@@ -206,4 +269,22 @@ function dds_to_suit(suit: number): string {
 function dir_to_dds(dir: string): number {
   const dirs = ["N", "E", "S", "W"];
   return dirs.indexOf(dir);
+}
+
+function dds_to_dir(dir: number): string {
+  const dirs = ["N", "E", "S", "W"];
+  return dirs[dir];
+}
+
+function vul_to_dds(vul: Vulnerability): number {
+  if (vul.equals(Vulnerability.NorthSouth)) {
+    return Vulnerable.NorthSouth;
+  }
+  if (vul.equals(Vulnerability.EastWest)) {
+    return Vulnerable.EastWest;
+  }
+  if (vul.equals(Vulnerability.All)) {
+    return Vulnerable.Both;
+  }
+  return Vulnerable.None;
 }
