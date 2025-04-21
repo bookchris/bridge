@@ -9,13 +9,13 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { useDdsHand } from "../../lib/useDds";
+import { useDdsSolveHand } from "../../lib/useDds";
 import { BidBox } from "./bidBox";
 import { BiddingCard } from "./biddingCard";
 import { ContractCard } from "./contractCard";
 import { Controls } from "./controls";
+import { DoubleDummyTableCard } from "./doubelDummyTableCard";
 import { Holding } from "./holding";
-import { LinesCard } from "./linesCard";
 import { Play } from "./playCard";
 import { PlayerBox } from "./playerBox";
 import { usePosition } from "./position";
@@ -96,14 +96,14 @@ export function Board({ hand, live, analysis, playingAs }: BoardProps) {
     [width, hand, handAt, playingAs, live, position, setPosition]
   );
 
-  const dds = useDdsHand(handAt);
+  const dds = useDdsSolveHand(handAt);
 
   const right = (
     <>
       <Controls hand={hand} position={position} setPosition={setPosition} />
       <BiddingCard hand={hand} position={position} />
-      {!hand.isBidding && <LinesCard hand={hand} position={position} />}
       {!hand.isBidding && <Play hand={hand} position={position} />}
+      {!live && <DoubleDummyTableCard hand={hand} />}
     </>
   );
   return (

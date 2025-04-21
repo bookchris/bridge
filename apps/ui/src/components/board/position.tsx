@@ -13,8 +13,8 @@ export const usePosition = (hand: Hand) => {
   const { table } = useTableContext();
   const navigate = useNavigate();
 
-  const state: State = location.state;
-  const position = state.position || (table?.id ? hand.positions : 0);
+  const state = location.state as State | undefined;
+  const position = state?.position || (table?.id ? hand.positions : 0);
 
   const [variation, setVariation] = useState([] as Card[]);
 
