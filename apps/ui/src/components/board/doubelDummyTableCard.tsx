@@ -1,4 +1,4 @@
-import { Hand, Seat, Suits } from "@bridge/core";
+import { AllSuits, Hand, Seat } from "@bridge/core";
 import {
   Paper,
   Table,
@@ -32,31 +32,31 @@ export function DoubleDummyTableCard({ hand }: PlayProps) {
             <TableBody>
               <TableRow>
                 <TableCell />
-                {Suits.map((suit, i) => (
+                {AllSuits.map((suit, i) => (
                   <TableCell key={i}>{suit.toString()}</TableCell>
                 ))}
               </TableRow>
               {[Seat.North, Seat.South, Seat.East, Seat.West].map((seat, i) => (
                 <TableRow key={i}>
                   <TableCell>{seat.toChar()}</TableCell>
-                  {Suits.map((suit, i) => (
+                  {AllSuits.map((suit, i) => (
                     <TableCell key={i}>
-                      {tableAndPar.table[suit.toPbn()][seat.toChar()]}
+                      {tableAndPar.table[suit.value][seat.toChar()]}
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <Typography sx={{ width: "100%", textAlign: "center", m: 1 }}>
+          {/* <Typography sx={{ width: "100%", textAlign: "center", m: 1 }}>
             Par: {tableAndPar.par.score}{" "}
-            {tableAndPar.par.contracts.map((contract) => (
-              <>
+            {tableAndPar.par.contracts.map((contract, i) => (
+              <Fragment key={i}>
                 <br />
                 {contract}
-              </>
+              </Fragment>
             ))}
-          </Typography>
+          </Typography> */}
         </>
       )}
     </Paper>

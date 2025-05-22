@@ -6,7 +6,7 @@ import {
   TablePlayRequest,
   TablePlayResponse,
 } from "@bridge/api";
-import { Bid, Card, Hand, Seats } from "@bridge/core";
+import { AllSeats, Bid, Card, Hand } from "@bridge/core";
 import { Table } from "@bridge/storage";
 import { logger } from "firebase-functions/v2";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -80,7 +80,7 @@ export const tablebid = onCall<TableBidRequest, Promise<TableBidResponse>>(
         `${uid} is not a player on table ${tableId}`
       );
 
-    const newHand = table.doBid(new Bid(bid), Seats[playerIndex]);
+    const newHand = table.doBid(new Bid(bid), AllSeats[playerIndex]);
     if (!newHand)
       throw new HttpsError(
         "invalid-argument",
@@ -136,7 +136,7 @@ export const tableplay = onCall<TablePlayRequest, Promise<TablePlayResponse>>(
         `${uid} is not a player on table ${tableId}`
       );
 
-    const newHand = table.doPlay(new Card(card), Seats[playerIndex]);
+    const newHand = table.doPlay(new Card(card), AllSeats[playerIndex]);
     if (!newHand)
       throw new HttpsError(
         "invalid-argument",

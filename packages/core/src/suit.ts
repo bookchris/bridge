@@ -1,41 +1,25 @@
-export class Suit {
-  public static Club = new Suit("♣", "C");
-  public static Diamond = new Suit("♦", "D");
-  public static Heart = new Suit("♥", "H");
-  public static Spade = new Suit("♠", "S");
-  public static NoTrump = new Suit("NT", "N");
+const suits = ["♣", "♦", "♥", "♠", "NT"];
 
-  private constructor(private suit: string, private alt?: string) {}
+export class Suit {
+  public static Club = new Suit("♣");
+  public static Diamond = new Suit("♦");
+  public static Heart = new Suit("♥");
+  public static Spade = new Suit("♠");
+  public static NoTrump = new Suit("NT");
+
+  constructor(public readonly value: string) {
+    if (!suits.includes(value)) {
+      throw new Error("Invalid value passed to Suit: " + value);
+    }
+  }
 
   toString() {
-    return this.suit;
-  }
-
-  toLin() {
-    return this.alt || this.suit;
-  }
-
-  toPbn() {
-    return this.alt || this.suit;
+    return this.value;
   }
 
   index() {
-    return Suits.indexOf(this);
-  }
-
-  public static parse(input: string) {
-    const suit = Suits.find((s) => s.suit === input || s.alt === input);
-    if (!suit) {
-      throw new Error("Can't make a suit from string: " + input);
-    }
-    return suit;
+    return suits.indexOf(this.value);
   }
 }
 
-export const Suits = [
-  Suit.Club,
-  Suit.Diamond,
-  Suit.Heart,
-  Suit.Spade,
-  Suit.NoTrump,
-];
+export const AllSuits = suits.map((s) => new Suit(s));

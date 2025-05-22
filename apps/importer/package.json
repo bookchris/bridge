@@ -10,8 +10,8 @@
     "test": "plasmo test"
   },
   "dependencies": {
-    "firebase": "^10.7.2",
-    "plasmo": "0.84.1",
+    "firebase": "^11.6.0",
+    "plasmo": "0.90.3",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -19,8 +19,8 @@
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/chrome": "0.0.251",
     "@types/node": "20.9.0",
-    "@types/react": "18.2.37",
-    "@types/react-dom": "18.2.15",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
     "prettier": "^3.1.1",
     "typescript": "^4.6.4"
   },

@@ -14,15 +14,15 @@ export function CardText({ card }: CardTextProps) {
 }
 
 export function cardColor(card: Card) {
-  switch (card.suit) {
-    case Suit.Heart:
+  switch (card.suit.value) {
+    case Suit.Heart.value:
       return "red";
-    case Suit.Diamond:
+    case Suit.Diamond.value:
       return "orange";
-    case Suit.Club:
+    case Suit.Club.value:
       return "blue";
     default:
-    case Suit.Spade:
+    case Suit.Spade.value:
       return "black";
   }
 }

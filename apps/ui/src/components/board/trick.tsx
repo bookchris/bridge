@@ -58,7 +58,7 @@ const OneTrick = forwardRef<HTMLDivElement, { trick: CoreTrick }>(
         {trick?.cards.map((card, i) => (
           <PlayingCard
             faceUp
-            key={card.id}
+            key={card.value}
             card={card}
             sx={{
               position: "absolute",

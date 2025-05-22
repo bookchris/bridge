@@ -1,8 +1,9 @@
-import { Suit, Suits } from "./suit";
+import { linFromSuit } from "./lin";
+import { AllSuits, Suit } from "./suit";
 
 export const SuitBids = ["1", "2", "3", "4", "5", "6", "7"].reduce(
   (res, bid: string) => {
-    const level = Suits.map((s) => bid + s);
+    const level = AllSuits.map((s) => bid + s);
     return res.concat(level);
   },
   [] as string[]
@@ -26,7 +27,7 @@ export class Bid {
       this.bid = bid;
     } else {
       this.level = parseInt(bid[0]);
-      this.suit = Suit.parse(bid.substring(1));
+      this.suit = new Suit(bid.substring(1));
       this.bid = `${this.level}${this.suit}`;
       this.index = SuitBids.indexOf(this.bid);
       if (this.index === -1) {
@@ -45,7 +46,10 @@ export class Bid {
 
   toBen() {
     if (this.index !== undefined) {
-      return `${this.level}${this.suit?.toLin()}`;
+      if (!this.suit) {
+        throw new Error("bad state, index but no suit");
+      }
+      return `${this.level}${linFromSuit(this.suit)}`;
     }
     if (this.bid === "Pass") {
       return "PASS";

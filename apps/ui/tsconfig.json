@@ -14,15 +14,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "react-jsx"
   },
   "include": [
     "src",
     "functions/api",
     "functions/core",
     "functions/storage",
-    "src/worker.ts",
+    "src/worker.ts"
   ],
   "exclude": ["functions/lib", "functions/src", "**/*.spec.ts", "**/*.test.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
