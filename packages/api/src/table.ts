@@ -15,7 +15,7 @@ export type TableBidResponse = void;
 
 export type TablePlayRequest = {
   tableId: string;
-  card: number;
+  card: string;
 };
 
 export type TablePlayResponse = void;

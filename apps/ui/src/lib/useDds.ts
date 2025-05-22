@@ -2,7 +2,9 @@ import {
   Card,
   Hand,
   holdingsToPbnDeal,
+  pbnFromSuit,
   Seat,
+  Suit,
   Vulnerability,
 } from "@bridge/core";
 import {
@@ -18,7 +20,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 class DdsApi {
   private worker: Comlink.Remote<Dds> = Comlink.wrap<Dds>(
-    new Worker(new URL("../worker", import.meta.url), {
+    new Worker(new URL("../worker.ts", import.meta.url), {
       type: "module",
     })
   );
@@ -36,7 +38,7 @@ class DdsApi {
     const level = hand.contract.suitBid?.level;
     if (!level) return undefined;
 
-    const trump = hand.contract.suitBid?.suit?.toPbn();
+    const trump = hand.contract.suitBid?.suit?.value;
     if (!trump) return undefined;
 
     const declarer = hand.contract.declarer;
@@ -46,29 +48,29 @@ class DdsApi {
 
     const tricks = hand.tricks;
     const lastTrick = tricks.at(-1);
-    const played: string[] = [];
+    const played: Card[] = [];
     if (lastTrick) {
       if (!lastTrick.complete) {
         leader = lastTrick.leader;
         for (const card of lastTrick.cards) {
-          played.push(card.toPbn());
+          played.push(card);
         }
       } else {
         leader = lastTrick.winningSeat;
       }
     }
-    const pbn = holdingsToPbnDeal(hand, declarer);
+    const pbn = holdingsToPbnDeal(hand, Seat.North);
 
     let futureTricks: FutureTricks;
     try {
       const dealPbn = {
         trump: suit_to_dds(trump),
         first: dir_to_dds(leader.toChar()),
-        currentTrickRank: played.map((c) => rank_to_dds(c[0])),
-        currentTrickSuit: played.map((c) => suit_to_dds(c[1])),
+        currentTrickRank: played.map((c) => rank_to_dds(c.rank.value)),
+        currentTrickSuit: played.map((c) => suit_to_dds(c.suit.value)),
         remainCards: pbn,
       };
-      futureTricks = await this.worker.SolveBoardPBN(dealPbn, -1, 3, 2);
+      futureTricks = await this.worker.SolveBoardPBN(dealPbn, -1, 3, 1);
     } catch (e: unknown) {
       console.log("dds error", e);
       return undefined;
@@ -88,10 +90,10 @@ class DdsApi {
         throw new Error("position not reached: " + score);
       }
       const equals = futureTricks.equals[i];
-      newSolution[Card.parse(dds_to_suit(suit) + dds_to_rank(rank)).id] =
+      newSolution[new Card(dds_to_rank(rank) + dds_to_suit(suit)).value] =
         relativeScore(score);
       for (const eq of dds_to_ranks(equals)) {
-        newSolution[Card.parse(dds_to_suit(suit) + eq).id] =
+        newSolution[new Card(eq + dds_to_suit(suit)).value] =
           relativeScore(score);
       }
     }
@@ -111,13 +113,13 @@ class DdsApi {
     const level = hand.contract.suitBid?.level;
     if (!level) return undefined;
 
-    const trump = hand.contract.suitBid?.suit?.toPbn();
+    const trump = hand.contract.suitBid?.suit?.value;
     if (!trump) return undefined;
 
     const declarer = hand.contract.declarer;
     if (!declarer) return undefined;
 
-    const pbn = holdingsToPbnDeal(handAt, declarer);
+    const pbn = holdingsToPbnDeal(handAt, Seat.North);
 
     let solvedPlay: SolvedPlay;
     try {
@@ -130,12 +132,11 @@ class DdsApi {
       };
       const playTracePbn = {
         cards: hand.play
-          .map((card) => `${card.suit.toPbn()}${card.rankStr}`)
+          .map((card) => `${pbnFromSuit(card.suit)}${card.rank}`)
           .join(""),
       };
       solvedPlay = await this.worker.AnalysePlayPBN(dealPbn, playTracePbn);
     } catch (e: unknown) {
-      console.log("dds error", e);
       return undefined;
     }
 
@@ -257,12 +258,24 @@ function dds_to_ranks(ranks: number): string[] {
 }
 
 function suit_to_dds(suit: string): number {
-  const suits = ["S", "H", "D", "C", "N"];
+  const suits = [
+    Suit.Spade.value,
+    Suit.Heart.value,
+    Suit.Diamond.value,
+    Suit.Club.value,
+    Suit.NoTrump.value,
+  ];
   return suits.indexOf(suit);
 }
 
 function dds_to_suit(suit: number): string {
-  const suits = ["S", "H", "D", "C", "N"];
+  const suits = [
+    Suit.Spade.value,
+    Suit.Heart.value,
+    Suit.Diamond.value,
+    Suit.Club.value,
+    Suit.NoTrump.value,
+  ];
   return suits[suit];
 }
 

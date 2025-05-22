@@ -100,7 +100,7 @@ export function usePlay(tableId: string): HttpsCallableHook<Card, void> {
     TablePlayResponse
   >(functions, "tableplay");
   const run = useCallback(
-    (card: Card) => internalRun({ tableId: tableId, card: card.toJson() }),
+    (card: Card) => internalRun({ tableId: tableId, card: card.value }),
     [internalRun, tableId]
   );
   return [run, inProgress, error];

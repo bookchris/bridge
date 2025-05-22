@@ -1,5 +1,5 @@
 import { Bid } from "./bid";
-import { Card } from "./card";
+import { AllCards, Card } from "./card";
 import { Contract } from "./contract";
 import { linToHand } from "./lin";
 import { Seat } from "./seat";
@@ -11,9 +11,9 @@ export type HandJson = {
   board?: number;
   dealer?: string;
   vulnerability?: string;
-  deal?: number[];
+  deal?: string[];
   bidding?: string[];
-  play?: number[];
+  play?: string[];
   players?: string[];
   claim?: number;
 };
@@ -58,8 +58,8 @@ export class Hand {
 
     return new Hand({
       board: data.board || -1,
-      dealer: Seat.fromString(data.dealer || ""),
-      vulnerability: Vulnerability.fromString(data.vulnerability || ""),
+      dealer: new Seat(data.dealer || ""),
+      vulnerability: new Vulnerability(data.vulnerability || ""),
       deal: data.deal?.map((c) => new Card(c)) || [],
       bidding: data.bidding?.map((b) => new Bid(b)) || [],
       play: data.play?.map((c) => new Card(c)) || [],
@@ -83,18 +83,18 @@ export class Hand {
     }
 
     return this.fromJson({
-      deal: deal,
+      deal: deal.map((i) => AllCards[i].value),
     });
   }
 
   toJson(): HandJson {
     return {
       board: this.board,
-      dealer: this.dealer.toJson(),
-      vulnerability: this.vulnerability.toJson(),
-      deal: this.deal.map((c) => c.toJson()),
+      dealer: this.dealer.value,
+      vulnerability: this.vulnerability.value,
+      deal: this.deal.map((c) => c.value),
       bidding: this.bidding.map((b) => b.toJson()),
-      play: this.play.map((c) => c.toJson()),
+      play: this.play.map((c) => c.value),
       players: this.players,
       claim: this.claim,
     };
@@ -113,7 +113,7 @@ export class Hand {
 
   getHolding(seat: Seat): Card[] {
     return this.getDeal(seat).filter(
-      (c) => !this.play.find((p) => p.id === c.id)
+      (c) => !this.play.find((p) => p.value === c.value)
     );
   }
 
@@ -427,7 +427,7 @@ export class Hand {
       return false;
     }
     for (const i in this.deal) {
-      if (this.deal[i].id !== hand.deal[i].id) {
+      if (this.deal[i].value !== hand.deal[i].value) {
         return false;
       }
     }
@@ -437,7 +437,7 @@ export class Hand {
       }
     }
     for (const i in this.play) {
-      if (this.play[i].id !== hand.play[i].id) {
+      if (this.play[i].value !== hand.play[i].value) {
         return false;
       }
     }
@@ -472,7 +472,7 @@ export class Hand {
     if (seat && player != seat) return false;
 
     const holding = this.getHolding(player);
-    if (!holding.find((c) => c.id === card.id)) return false;
+    if (!holding.find((c) => c.value === card.value)) return false;
 
     const lastTrick = this.tricks.at(-1);
     if (lastTrick && !lastTrick.complete) {
@@ -498,7 +498,7 @@ export class Hand {
     if (seat && player != seat) throw new Error(`it is not ${seat}'s turn`);
 
     const holding = this.getHolding(player);
-    if (!holding.find((c) => c.id === card.id))
+    if (!holding.find((c) => c.value === card.value))
       return `${seat} does not have card ${card}`;
 
     const lastTrick = this.tricks.at(-1);

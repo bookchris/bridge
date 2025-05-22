@@ -1,6 +1,7 @@
+import { Card } from "./card";
 import { Hand, HandJson } from "./hand";
 import { Seat } from "./seat";
-import { Suit, Suits } from "./suit";
+import { AllSuits, Suit } from "./suit";
 import { Vulnerability } from "./vulnerability";
 
 export const linToHand = (data: string): Hand => {
@@ -24,32 +25,29 @@ export const linToHand = (data: string): Hand => {
     terms.splice(0, 2);
     switch (key) {
       case "md": {
-        json.dealer = Seat.fromLin(value[0]).toJson();
+        json.dealer = linToSeat(value[0]).value;
         const linHands = value.substring(1).split(",");
         if (linHands.length !== 4) {
           continue;
         }
         const hands = linHands.map((linHand) => {
-          const hand: number[] = [];
+          const hand: string[] = [];
           ["C", "D", "H", "S"].forEach((s) => {
-            const suit = Suit.parse(s);
+            const suit = linToSuit(s);
             const start = linHand.indexOf(s) + 1;
             if (start === 0) return;
             let end = linHand.substring(start).search(/[SHDC]/) + start;
             if (end === start - 1) {
               end = linHand.length;
             }
-            const cards = linHand.substring(start, end);
-            for (const c of cards) {
-              const rank = linCardToRank(c);
-              if (rank !== -1) {
-                hand.push(rank + 13 * Suits.indexOf(suit));
-              }
+            const ranks = linHand.substring(start, end);
+            for (const rank of ranks) {
+              hand.push(new Card(`${rank}${suit}`).value);
             }
           });
           return hand;
         });
-        json.deal = ([] as number[]).concat(
+        json.deal = ([] as string[]).concat(
           hands[0],
           hands[1],
           hands[2],
@@ -58,10 +56,10 @@ export const linToHand = (data: string): Hand => {
         break;
       }
       case "sv":
-        json.vulnerability = Vulnerability.parse(value).toJson();
+        json.vulnerability = linToVulnerability(value).value;
         break;
       case "mb": {
-        const bid = linBidToBid(value);
+        const bid = linToBid(value);
         if (!json.bidding) {
           json.bidding = [];
         }
@@ -69,16 +67,12 @@ export const linToHand = (data: string): Hand => {
         break;
       }
       case "pc": {
-        const suit = Suit.parse(value[0]);
-        const rank = linCardToRank(value[1]);
-        if (rank === -1) {
-          continue;
-        }
-        const card = rank + 13 * Suits.indexOf(suit);
+        const suit = linToSuit(value[0]);
+        const rank = value[1];
         if (!json.play) {
           json.play = [];
         }
-        json.play.push(card);
+        json.play.push(new Card(`${rank}${suit}`).value);
         break;
       }
       case "pn": {
@@ -108,6 +102,7 @@ export const linToHand = (data: string): Hand => {
   return Hand.fromJson(json);
 };
 
+/*
 function linCardToRank(c: string) {
   switch (c) {
     case "A":
@@ -127,8 +122,9 @@ function linCardToRank(c: string) {
   }
   return -1;
 }
+  */
 
-function linBidToBid(b: string) {
+export function linToBid(b: string) {
   let bid = b.toUpperCase().replace("!", "");
   if (bid.endsWith("N")) {
     bid = bid + "T";
@@ -139,7 +135,75 @@ function linBidToBid(b: string) {
   } else if (bid === "P") {
     bid = "Pass";
   } else {
-    bid = bid[0] + Suits[["C", "D", "H", "S"].indexOf(bid[1])];
+    bid = bid[0] + AllSuits[["C", "D", "H", "S"].indexOf(bid[1])].value;
   }
   return bid;
+}
+
+const linToSuitMap: { [x: string]: string } = {
+  C: Suit.Club.value,
+  D: Suit.Diamond.value,
+  H: Suit.Heart.value,
+  S: Suit.Spade.value,
+};
+export function linToSuit(s: string): Suit {
+  const suit = linToSuitMap[s];
+  if (!suit) throw new Error("Invalid lin suit: " + s);
+  return new Suit(suit);
+}
+
+const linFromSuitMap = Object.fromEntries(
+  Object.entries(linToSuitMap).map(([k, v]) => [v, k])
+);
+export function linFromSuit(s: Suit) {
+  const suit = linFromSuitMap[s.value];
+  if (!suit) throw new Error("Invalid suit for lin: " + s);
+  return suit;
+}
+
+const linToSeatMap: { [x: string]: string } = {
+  "1": Seat.South.value,
+  "2": Seat.West.value,
+  "3": Seat.North.value,
+  "4": Seat.East.value,
+};
+export function linToSeat(s: string): Seat {
+  const seat = linToSeatMap[s];
+  if (!seat) throw new Error("Invalid lin seat: " + s);
+  return new Seat(seat);
+}
+
+const linFromSeatMap = Object.fromEntries(
+  Object.entries(linToSeatMap).map(([k, v]) => [v, k])
+);
+export function linFromSeat(s: Seat): string {
+  const seat = linFromSeatMap[s.value];
+  if (!seat) throw new Error("Invalid set for lin: " + s);
+  return seat;
+}
+
+const linToVulnerabilityMap: { [x: string]: string } = {
+  o: Vulnerability.None.value,
+  e: Vulnerability.EastWest.value,
+  n: Vulnerability.NorthSouth.value,
+  b: Vulnerability.All.value,
+};
+export function linToVulnerability(v: string): Vulnerability {
+  const vul = linToVulnerabilityMap[v];
+  if (!vul) throw new Error("Invalid lin vulnerability: " + v);
+  return new Vulnerability(vul);
+}
+
+const linFromVulnerabilityMap = Object.fromEntries(
+  Object.entries(linToVulnerabilityMap).map(([k, v]) => [v, k])
+);
+
+export function linFromVulnerability(v: Vulnerability): string {
+  const map: { [x: string]: string } = {
+    ...linFromVulnerabilityMap,
+    0: Vulnerability.None.value, // Additional one-way value.
+  };
+  const vul = map[v.value];
+  if (!vul) throw new Error("Invalid vulnerability for lin: " + v);
+  return vul;
 }

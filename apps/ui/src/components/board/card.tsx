@@ -73,10 +73,8 @@ export function PlayingCard({
       {faceUp ? (
         <>
           <Box sx={{ position: "absolute", top: "0.5em", left: "0.9em" }}>
-            <CornerText sx={{ color: color }}>{card.rankStr}</CornerText>
-            <CornerText sx={{ color: color }}>
-              {card.suit.toString()}
-            </CornerText>
+            <CornerText sx={{ color }}>{card.rank.toString()}</CornerText>
+            <CornerText sx={{ color }}>{card.suit.toString()}</CornerText>
             {dds !== undefined && <DdsText>{dds == 0 ? "E" : dds}</DdsText>}
           </Box>
           <Box
@@ -87,10 +85,8 @@ export function PlayingCard({
               transform: "rotate(180deg);",
             }}
           >
-            <CornerText sx={{ color: color }}>{card.rankStr}</CornerText>
-            <CornerText sx={{ color: color }}>
-              {card.suit.toString()}
-            </CornerText>
+            <CornerText sx={{ color }}>{card.rank.toString()}</CornerText>
+            <CornerText sx={{ color }}>{card.suit.toString()}</CornerText>
           </Box>
         </>
       ) : (

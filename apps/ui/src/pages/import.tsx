@@ -39,8 +39,9 @@ function ImportHand() {
       <Box sx={{ display: "flex", justifyContent: "right", mt: 1 }}>
         <Button
           disabled={!input || inProgress}
-          onClick={() =>
-            run({ input: input }).then(({ id }) => navigate("/hands/" + id))
+          onClick={
+            //() => Hand.fromLin(input)
+            () => run({ input }).then(({ id }) => navigate("/hands/" + id))
           }
         >
           Import

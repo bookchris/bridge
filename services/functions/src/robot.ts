@@ -1,4 +1,12 @@
-import { Bid, Card, Hand, Seat, Suit } from "@bridge/core";
+import {
+  benFromCard,
+  benFromVulnerability,
+  Bid,
+  Card,
+  Hand,
+  Seat,
+  Suit,
+} from "@bridge/core";
 import { Table } from "@bridge/storage";
 import axios from "axios";
 import { logger } from "firebase-functions/v2";
@@ -95,7 +103,7 @@ export const robot = onValueWritten("/tables/{tableId}", async (event) => {
 const getBid = async (hand: Hand) => {
   if (fast) return Promise.resolve(new Bid("Pass"));
   const req = {
-    vul: hand.vulnerability.toBen(),
+    vul: benFromVulnerability(hand.vulnerability),
     hand: getHolding(hand),
     auction: getAuction(hand),
   };
@@ -112,7 +120,7 @@ const getLead = async (hand: Hand) => {
   }
 
   const req = {
-    vul: hand.vulnerability.toBen(),
+    vul: benFromVulnerability(hand.vulnerability),
     hand: getHolding(hand),
     auction: getAuction(hand),
   };
@@ -120,7 +128,7 @@ const getLead = async (hand: Hand) => {
   const resp = await axios.post(baseURL + "/api/lead", req);
   const data: { card: string } = resp.data;
   logger.info("response", data);
-  return Card.parse(data.card);
+  return new Card(data.card);
 };
 
 const getPlay = async (hand: Hand) => {
@@ -131,7 +139,7 @@ const getPlay = async (hand: Hand) => {
     return Promise.resolve(card);
   }
   const req = {
-    vul: hand.vulnerability.toBen(),
+    vul: benFromVulnerability(hand.vulnerability),
     hands: [
       holdingToBen(hand.getDeal(Seat.North)),
       holdingToBen(hand.getDeal(Seat.East)),
@@ -139,13 +147,13 @@ const getPlay = async (hand: Hand) => {
       holdingToBen(hand.getDeal(Seat.West)),
     ],
     auction: getAuction(hand),
-    play: hand.play.map((c) => c.toBen()),
+    play: hand.play.map((c) => benFromCard(c)),
   };
   logger.info("requesting play", req);
   const resp = await axios.post(baseURL + "/api/play", req);
   const data: { card: string } = resp.data;
   logger.info("response", data);
-  return Card.parse(data.card);
+  return new Card(data.card);
 };
 
 const getAuction = (hand: Hand) => {
@@ -167,7 +175,7 @@ const holdingToBen = (cards: Card[]) => {
   const holdingMap = cards.reduce(
     (m, card) => {
       const suit = card.suit.toString();
-      m[suit] += card.rankStr;
+      m[suit] += card.rank.toString();
       return m;
     },
     {

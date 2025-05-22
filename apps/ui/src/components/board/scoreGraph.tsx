@@ -70,10 +70,11 @@ export function ScoreGraph({ hand, position, setPosition }: ScoreGraphProps) {
             <Line
               dot={(props) => (
                 <CustomizedDot
+                  {...props}
+                  key={props.key}
                   hand={hand}
                   position={position}
                   setPosition={setPosition}
-                  {...props}
                 />
               )}
               type="monotone"

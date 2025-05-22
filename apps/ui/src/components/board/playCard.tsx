@@ -52,7 +52,7 @@ export function Play({ hand, position }: PlayProps) {
               </TableCell>
               {trick.cards.map((card, j) => (
                 <TableCell
-                  key={card.id}
+                  key={card.value}
                   onClick={() => setPosition(i * 4 + j + hand.bidding.length)}
                   align="center"
                   sx={{

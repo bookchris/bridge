@@ -1,4 +1,4 @@
-import { Bid, Card, Seat, Seats } from "@bridge/core";
+import { AllSeats, Bid, Card, Seat } from "@bridge/core";
 import {
   createContext,
   useCallback,
@@ -26,7 +26,7 @@ export const useTableContext = () => useContext(TableContext);
 export function TableContextProvider({ table }: { table: Table }) {
   const { user } = useUserContext();
   const playerIndex = table?.uids.indexOf(user?.uid || "") ?? -1;
-  const playingAs = playerIndex === -1 ? undefined : Seats[playerIndex];
+  const playingAs = playerIndex === -1 ? undefined : AllSeats[playerIndex];
 
   const [pre, setPre] = useState<Table>();
   useEffect(() => {

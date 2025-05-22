@@ -1,79 +1,40 @@
-import { Suit, Suits } from "./suit";
+import { AllRanks, Rank } from "./rank";
+import { Suit } from "./suit";
+
+const cards = [Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade].reduce(
+  (res, suit) => res.concat(AllRanks.map((rank) => `${rank}${suit}`)),
+  [] as string[]
+);
 
 export class Card {
-  readonly id: number;
+  readonly rank: Rank;
   readonly suit: Suit;
-  readonly rank: number;
 
-  constructor(id: number) {
-    this.id = id;
-    this.suit = Object.values(Suit)[Math.floor(id / 13)];
-    this.rank = id % 13;
+  constructor(public readonly value: string) {
+    if (value.length != 2) {
+      throw new Error("Invalid card value: " + value);
+    }
+    this.rank = new Rank(value[0]);
+    this.suit = new Suit(value[1]);
   }
 
-  static parse(value: string): Card {
-    const suit = Suit.parse(value[0]);
-    const rank = parseRank(value[1]);
-    if (rank === -1) {
-      throw new Error("Unable to parse card: " + value);
-    }
-    return new Card(rank + 13 * Suits.indexOf(suit));
+  static fromIndex(index: number): Card {
+    const card = cards[index];
+    if (!card) throw new Error("Invalid card index: " + index);
+    return new Card(card);
   }
 
-  get rankStr() {
-    switch (this.rank) {
-      case 8:
-        return "T";
-      case 9:
-        return "J";
-      case 10:
-        return "Q";
-      case 11:
-        return "K";
-      case 12:
-        return "A";
-      default:
-        return `${this.rank + 2}`;
-    }
+  index() {
+    return cards.indexOf(this.value);
   }
 
   toString() {
-    return `${this.rankStr}${this.suit}`;
-  }
-
-  toJson(): number {
-    return this.id;
-  }
-
-  toBen() {
-    return `${this.suit.toLin()}${this.rankStr}`;
-  }
-
-  toPbn() {
-    return `${this.rankStr}${this.suit.toPbn()}`;
+    return `${this.rank}${this.suit}`;
   }
 
   static comparator(a: Card, b: Card): number {
-    return a.id - b.id;
+    return a.index() - b.index();
   }
 }
 
-function parseRank(c: string) {
-  switch (c) {
-    case "A":
-      return 12;
-    case "K":
-      return 11;
-    case "Q":
-      return 10;
-    case "J":
-      return 9;
-    case "T":
-      return 8;
-  }
-  const number = parseInt(c);
-  if (number > 0) {
-    return number - 2;
-  }
-  return -1;
-}
+export const AllCards = cards.map((c) => new Card(c));

@@ -27,7 +27,7 @@ export function BiddingCard({ hand, seat, position }: BiddingProps) {
 
   const bids = [] as ReactNode[];
   let pos = viewer.next();
-  while (pos != dealer) {
+  while (!pos.equals(dealer)) {
     pos = pos.next();
     bids.push(<TableCell key={"empty" + pos} />);
   }

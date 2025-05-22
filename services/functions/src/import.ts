@@ -19,6 +19,7 @@ export const importhand = onCall<
   try {
     hand = Hand.fromLin(input);
   } catch (err: unknown) {
+    console.error("import exception: ", err);
     throw new HttpsError("invalid-argument", errorToString(err));
   }
   const ref = firestore

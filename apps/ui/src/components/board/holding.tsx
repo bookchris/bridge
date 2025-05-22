@@ -60,15 +60,15 @@ export function Holding({ seat, nextCard, dds }: HoldingProps) {
       <Box sx={{ mr: `${margin}px` }} />
       {cards?.map((card) => (
         <PlayingCard
-          dds={dds?.[card.id]}
-          selected={nextCard?.id === card.id}
+          dds={dds?.[card.value]}
+          selected={nextCard?.value === card.value}
           enabled={
             !live
               ? handAt.canPlay(card)
               : playingAs && handAt.canPlay(card, playingAs)
           }
           faceUp={!live || isPlayer || isDummy}
-          key={card.id}
+          key={card.value}
           card={card}
           onClick={() => onClick(card)}
           sx={{ ml: `-${margin}px` }}
