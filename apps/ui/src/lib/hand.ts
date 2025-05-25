@@ -24,7 +24,7 @@ const handConverter: FirestoreDataConverter<StoredHand> = {
   },
   fromFirestore(
     snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
+    options: SnapshotOptions,
   ): StoredHand {
     const data = snapshot.data(options);
     const hand = Hand.fromJson(data);
@@ -49,7 +49,7 @@ export function useHandList(uid: string) {
     ? query(
         collection(firestore, "hands").withConverter(handConverter),
         where("uids", "array-contains", uid),
-        orderBy("created", "desc")
+        orderBy("created", "desc"),
       )
     : null;
   return useCollectionData<StoredHand>(ref);

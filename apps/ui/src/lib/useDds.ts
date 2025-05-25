@@ -22,7 +22,7 @@ class DdsApi {
   private worker: Comlink.Remote<Dds> = Comlink.wrap<Dds>(
     new Worker(new URL("../worker.ts", import.meta.url), {
       type: "module",
-    })
+    }),
   );
 
   async ddsSolveHand(hand: Hand): Promise<Solution | undefined> {
@@ -35,14 +35,12 @@ class DdsApi {
     const player = hand.player;
     if (!player) return undefined;
 
-    const level = hand.contract.suitBid?.level;
-    if (!level) return undefined;
+    const contract = hand.contract;
+    if (!contract) return undefined;
 
-    const trump = hand.contract.suitBid?.suit?.value;
-    if (!trump) return undefined;
-
-    const declarer = hand.contract.declarer;
-    if (!declarer) return undefined;
+    const level = hand.contract.level;
+    const trump = hand.contract.suit.value;
+    const declarer = hand.contract.seat;
 
     const declarerTricks = hand.declarerTricks.length;
 
@@ -85,7 +83,7 @@ class DdsApi {
     for (let i = 0; i < futureTricks.cards; i++) {
       const suit = futureTricks.suit[i];
       const rank = futureTricks.rank[i];
-      let score = futureTricks.score[i];
+      const score = futureTricks.score[i];
       if (score < 0) {
         throw new Error("position not reached: " + score);
       }
@@ -104,21 +102,16 @@ class DdsApi {
   async ddsAnalysePlay(hand: Hand): Promise<PlayAnalysis | undefined> {
     const handAt = hand.atPosition(hand.bidding.length);
 
-    let leader = hand.openingLeader;
+    const leader = hand.openingLeader;
     if (!leader) return undefined;
 
     const player = hand.player;
     if (!player) return undefined;
 
-    const level = hand.contract.suitBid?.level;
-    if (!level) return undefined;
+    const contract = hand.contract;
+    if (!contract) return undefined;
 
-    const trump = hand.contract.suitBid?.suit?.value;
-    if (!trump) return undefined;
-
-    const declarer = hand.contract.declarer;
-    if (!declarer) return undefined;
-
+    const trump = hand.contract.suit.value;
     const pbn = holdingsToPbnDeal(handAt, Seat.North);
 
     let solvedPlay: SolvedPlay;
@@ -137,6 +130,7 @@ class DdsApi {
       };
       solvedPlay = await this.worker.AnalysePlayPBN(dealPbn, playTracePbn);
     } catch (e: unknown) {
+      console.log("dds error", e);
       return undefined;
     }
 
@@ -156,7 +150,7 @@ class DdsApi {
       parResultsDealer = await this.worker.DealerPar(
         ddTableResults,
         dir_to_dds(hand.dealer.toChar()),
-        vul_to_dds(hand.vulnerability)
+        vul_to_dds(hand.vulnerability),
       );
     } catch (e: unknown) {
       console.log("dds error", e);
@@ -168,7 +162,7 @@ class DdsApi {
         ddTableResults.resTable.map((suits, i) => [
           dds_to_suit(i),
           Object.fromEntries(suits.map((tricks, j) => [dds_to_dir(j), tricks])),
-        ])
+        ]),
       ),
       par: parResultsDealer,
     };
@@ -209,7 +203,7 @@ export function useDdsSolveHand(hand: Hand): Solution | undefined {
         setSolution(s);
       }
     });
-  }, [hand]);
+  }, [api, hand]);
   return solution;
 }
 

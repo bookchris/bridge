@@ -1,41 +1,55 @@
-import { linFromSuit } from "./lin";
 import { AllSuits, Suit } from "./suit";
 
-export const SuitBids = ["1", "2", "3", "4", "5", "6", "7"].reduce(
+const suitBids = ["1", "2", "3", "4", "5", "6", "7"].reduce(
   (res, bid: string) => {
     const level = AllSuits.map((s) => bid + s);
     return res.concat(level);
   },
   [] as string[]
 );
+const bids = [...suitBids, "Pass", "X", "XX"];
 
 export class Bid {
   static Pass = new Bid("Pass");
   static Double = new Bid("X");
   static Redouble = new Bid("XX");
 
-  readonly bid: string;
+  readonly suitBid?: {
+    suit: Suit;
+    level: number;
+  };
+
+  /*
   readonly suit?: Suit;
   readonly level?: number;
   readonly index?: number;
+  */
 
-  constructor(bid: string) {
-    this.bid = bid;
-    if (bid[0] === "P") {
-      this.bid = "Pass";
-    } else if (bid === "X" || bid === "XX") {
-      this.bid = bid;
-    } else {
-      this.level = parseInt(bid[0]);
-      this.suit = new Suit(bid.substring(1));
-      this.bid = `${this.level}${this.suit}`;
-      this.index = SuitBids.indexOf(this.bid);
-      if (this.index === -1) {
-        throw new Error(`${bid} is not a valid bid`);
-      }
+  constructor(public readonly value: string) {
+    if (!bids.includes(value)) {
+      throw new Error("Invalid value passed to Bid: " + value);
+    }
+    if (suitBids.includes(value)) {
+      this.suitBid = {
+        suit: new Suit(value[1]),
+        level: parseInt(value[0]),
+      };
     }
   }
 
+  equals(bid: Bid): boolean {
+    return bid.value === this.value;
+  }
+
+  suitIndex(): number {
+    const index = suitBids.indexOf(this.value);
+    if (index == -1) {
+      throw new Error(`suitIndex of non-suit bid ${this.value}`);
+    }
+    return index;
+  }
+
+  /*
   toString() {
     return this.bid;
   }
@@ -56,4 +70,5 @@ export class Bid {
     }
     return this.bid;
   }
+  */
 }

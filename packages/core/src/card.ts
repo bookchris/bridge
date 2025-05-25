@@ -5,6 +5,10 @@ const cards = [Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade].reduce(
   (res, suit) => res.concat(AllRanks.map((rank) => `${rank}${suit}`)),
   [] as string[]
 );
+const indexes = cards.reduce((map, value, i) => {
+  map.set(value, i);
+  return map;
+}, new Map<string, number>());
 
 export class Card {
   readonly rank: Rank;
@@ -25,7 +29,11 @@ export class Card {
   }
 
   index() {
-    return cards.indexOf(this.value);
+    const i = indexes.get(this.value);
+    if (i === undefined) {
+      throw new Error("Unexpected card with no index: " + this.value);
+    }
+    return i;
   }
 
   toString() {

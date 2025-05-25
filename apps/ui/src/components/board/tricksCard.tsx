@@ -6,7 +6,7 @@ const width = "50px";
 
 export function TricksCard() {
   const { handAt, scale } = useBoardContext();
-  const contract = handAt.contract.toShortString();
+  const contract = handAt.contract;
   if (!contract) return <div />;
   return (
     <Box

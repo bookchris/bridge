@@ -19,6 +19,7 @@ export type HandJson = {
 };
 
 export class Hand {
+  // Input
   readonly board: number;
   readonly dealer: Seat;
   readonly vulnerability: Vulnerability;
@@ -27,6 +28,12 @@ export class Hand {
   readonly play: Card[];
   readonly claim: number;
   readonly players: string[];
+
+  // Computed state.
+  readonly isPassedOut: boolean;
+  readonly state: HandState;
+  readonly contract: Contract | undefined;
+
   constructor(
     props:
       | Hand
@@ -49,6 +56,56 @@ export class Hand {
     this.play = props.play;
     this.claim = props.claim;
     this.players = props.players;
+
+    this.isPassedOut =
+      this.bidding.length === 4 &&
+      !this.bidding.find((x) => x.value !== Bid.Pass.value);
+
+    if (!this.isPassedOut && this.bidding.length > 3) {
+      const firstMap = [new Map<string, Seat>(), new Map<string, Seat>()];
+      let suitBid: { suit: Suit; level: number } | undefined;
+      let seat: Seat | undefined;
+      let doubled = "";
+      this.bidding.forEach((bid, i) => {
+        const bidder = this.dealer.next(i);
+        if (bid.suitBid) {
+          suitBid = bid.suitBid;
+          doubled = "";
+
+          let s = firstMap[bidder.teamIndex()].get(suitBid.suit.value);
+          if (!s) {
+            s = bidder;
+            firstMap[bidder.teamIndex()].set(suitBid.suit.value, bidder);
+          }
+          seat = s;
+        }
+        if (
+          bid.value === Bid.Double.value ||
+          bid.value === Bid.Redouble.value
+        ) {
+          doubled = bid.value;
+        }
+      });
+      if (
+        suitBid &&
+        seat &&
+        this.bidding.at(-1)?.equals(Bid.Pass) &&
+        this.bidding.at(-2)?.equals(Bid.Pass) &&
+        this.bidding.at(-3)?.equals(Bid.Pass)
+      ) {
+        this.contract = new Contract(
+          `${suitBid.level}${suitBid.suit.value}${seat.toChar()}${doubled}`
+        );
+      }
+    }
+
+    if (this.isPassedOut || this.claim !== -1 || this.play.length === 52) {
+      this.state = HandState.Complete;
+    } else if (!this.contract) {
+      this.state = HandState.Bidding;
+    } else {
+      this.state = HandState.Playing;
+    }
   }
 
   static fromJson(data: HandJson): Hand {
@@ -93,7 +150,7 @@ export class Hand {
       dealer: this.dealer.value,
       vulnerability: this.vulnerability.value,
       deal: this.deal.map((c) => c.value),
-      bidding: this.bidding.map((b) => b.toJson()),
+      bidding: this.bidding.map((b) => b.value),
       play: this.play.map((c) => c.value),
       players: this.players,
       claim: this.claim,
@@ -138,19 +195,7 @@ export class Hand {
   }
 
   get nextBidder() {
-    return this.dealer.next(this.contract.bids.length);
-  }
-
-  get state() {
-    if (this.contract.passed) {
-      return HandState.Complete;
-    }
-    if (!this.contract.complete) {
-      return HandState.Bidding;
-    }
-    if (this.claim !== -1) return HandState.Complete;
-    if (this.play?.length === 52) return HandState.Complete;
-    return HandState.Playing;
+    return this.dealer.next(this.bidding.length);
   }
 
   get isPlaying() {
@@ -162,7 +207,10 @@ export class Hand {
   }
 
   get openingLeader() {
-    return this.contract.declarer ? this.contract.declarer.next() : undefined;
+    if (!this.contract) {
+      throw new Error("opening leader requires contract");
+    }
+    return this.contract.seat.next();
   }
 
   get northSouthTricks() {
@@ -178,15 +226,19 @@ export class Hand {
   }
 
   get declarerTricks() {
+    const contract = this.contract;
+    if (!contract) {
+      throw new Error("declarerTricks requires a contract");
+    }
     return this.tricks.filter(
       (t) =>
-        t.winningSeat === this.contract.declarer ||
-        t.winningSeat === this.contract.declarer?.partner()
+        t.winningSeat === contract.seat ||
+        t.winningSeat === contract.seat.partner()
     );
   }
 
   get result() {
-    if (this.state !== HandState.Complete || !this.contract.suitBid?.level) {
+    if (this.state !== HandState.Complete || !this.contract) {
       return 0;
     }
     let tricks = 0;
@@ -194,21 +246,19 @@ export class Hand {
       tricks = this.claim;
     } else {
       tricks =
-        this.contract.declarer == Seat.North ||
-        this.contract.declarer == Seat.South
+        this.contract.seat == Seat.North || this.contract.seat == Seat.South
           ? this.northSouthTricks
           : this.eastWestTricks;
     }
-    return tricks - (6 + this.contract.suitBid.level);
+    return tricks - (6 + this.contract.level);
   }
 
   get score() {
-    if (this.state !== HandState.Complete || this.contract.passed) {
+    if (this.state !== HandState.Complete || !this.contract) {
       return 0;
     }
     const result = this.result;
-    const declarer = this.contract.declarer;
-    if (!declarer) throw new Error("unexpected empty declarer");
+    const declarer = this.contract.seat;
     const vulnerable = this.vulnerability.isVulnerable(declarer);
     if (result < 0) {
       if (this.contract.doubled || this.contract.redoubled) {
@@ -235,8 +285,8 @@ export class Hand {
       }
     }
     let score = 0;
-    const level = this.contract.suitBid?.level || 0;
-    switch (this.contract.suitBid?.suit) {
+    const level = this.contract.level || 0;
+    switch (this.contract.suit) {
       case Suit.Spade:
       case Suit.Heart:
         score = level * 30;
@@ -257,9 +307,9 @@ export class Hand {
       score += 50;
     } else {
       score += vulnerable ? 500 : 300;
-      if (this.contract.suitBid?.level === 7) {
+      if (this.contract.level === 7) {
         score += vulnerable ? 1500 : 1000;
-      } else if (this.contract.suitBid?.level === 6) {
+      } else if (this.contract.level === 6) {
         score += vulnerable ? 750 : 500;
       }
     }
@@ -274,7 +324,7 @@ export class Hand {
       } else if (this.contract.redoubled) {
         score += result * (vulnerable ? 400 : 200);
       } else {
-        switch (this.contract.suitBid?.suit) {
+        switch (this.contract.suit) {
           case Suit.NoTrump:
           case Suit.Spade:
           case Suit.Heart:
@@ -291,8 +341,9 @@ export class Hand {
   }
 
   scoreAs(seat: Seat) {
-    if (!this.contract.declarer) return 0;
-    return seat.isTeam(this.contract.declarer) ? this.score : this.score * -1;
+    const declarer = this.contract?.seat;
+    if (!declarer) return 0;
+    return seat.isTeam(declarer) ? this.score : this.score * -1;
   }
 
   get player() {
@@ -314,18 +365,14 @@ export class Hand {
   }
 
   isDummy(seat: Seat): boolean {
-    return this.play.length >= 1 && this.contract.declarer?.partner() === seat;
-  }
-
-  get contract() {
-    return new Contract(this.bidding, this.dealer);
+    return this.play.length >= 1 && this.contract?.seat.partner() === seat;
   }
 
   get tricks() {
-    const trump = this.contract.suitBid?.suit;
-    if (!trump) {
+    if (!this.contract) {
       return [];
     }
+    const trump = this.contract.suit;
     if (!this.openingLeader) {
       return [];
     }
@@ -352,7 +399,7 @@ export class Hand {
   }
 
   get positions() {
-    return this.contract.bids.length + this.play.length;
+    return this.bidding.length + this.play.length;
   }
 
   previousTurn(pos: number) {
@@ -432,7 +479,7 @@ export class Hand {
       }
     }
     for (const i in this.bidding) {
-      if (this.bidding[i].bid !== hand.bidding[i].bid) {
+      if (this.bidding[i].value !== hand.bidding[i].value) {
         return false;
       }
     }
@@ -447,7 +494,40 @@ export class Hand {
   canBid(bid: Bid, seat: Seat) {
     if (!this.isBidding) return false;
     if (this.nextBidder != seat) return false;
-    return this.contract.canBid(bid);
+
+    let opponentBid: Bid | undefined;
+    if (this.bidding.length && !this.bidding[-1].equals(Bid.Pass)) {
+      opponentBid = this.bidding[-1];
+    } else if (
+      this.bidding.length >= 3 &&
+      this.bidding.at(-1)?.equals(Bid.Pass) &&
+      this.bidding.at(-2)?.equals(Bid.Pass) &&
+      !this.bidding.at(-3)?.equals(Bid.Pass)
+    ) {
+      opponentBid = this.bidding.at(-3);
+    }
+
+    const lastSuitBid: Bid | undefined = [...this.bidding]
+      .reverse()
+      .find((bid) => bid.suitBid);
+
+    /*
+    function canDouble() {
+      return !!this.pendingOpponentBid?.suit;
+    }
+
+    function canRedouble() {
+      return this.pendingOpponentBid?.bid === "X";
+    }
+    */
+
+    if (bid.equals(Bid.Pass)) return true;
+    if (bid.equals(Bid.Double)) return !!opponentBid?.suitBid;
+    if (bid.equals(Bid.Redouble)) return !!opponentBid?.equals(Bid.Double);
+    if (!lastSuitBid) {
+      return true;
+    }
+    return bid.suitIndex() > lastSuitBid.suitIndex();
   }
 
   doBid(bid: Bid, seat: Seat): Hand | undefined {
@@ -460,32 +540,7 @@ export class Hand {
     });
   }
 
-  canPlay(card: Card, seat?: Seat) {
-    if (!this.isPlaying) return false;
-
-    const player = this.player;
-    if (!player) return false;
-
-    if (seat && this.isDummy(player)) {
-      seat = seat.partner();
-    }
-    if (seat && player != seat) return false;
-
-    const holding = this.getHolding(player);
-    if (!holding.find((c) => c.value === card.value)) return false;
-
-    const lastTrick = this.tricks.at(-1);
-    if (lastTrick && !lastTrick.complete) {
-      const lead = lastTrick.cards[0];
-      if (
-        card.suit !== lead.suit &&
-        holding.filter((c) => c.suit === lead.suit).length
-      )
-        return false;
-    }
-    return true;
-  }
-
+  /*
   tryPlay(card: Card, seat?: Seat) {
     if (!this.isPlaying) throw new Error("hand is not in playing state");
 
@@ -512,12 +567,45 @@ export class Hand {
     }
     return;
   }
+    */
 
-  doPlay(card: Card, seat?: Seat): Hand | undefined {
-    if (!this.canPlay(card, seat)) {
-      return undefined;
+  canPlay(card: Card, seat?: Seat): boolean {
+    try {
+      this.doPlay(card, seat);
+      return true;
+    } catch (e: unknown) {
+      return false;
     }
-    //this.tryPlay(card, seat);
+  }
+
+  doPlay(card: Card, seat?: Seat): Hand {
+    if (!this.isPlaying) throw new Error("hand is not in a playing state");
+
+    const player = this.player;
+    if (!player) throw new Error("no current player");
+
+    if (seat && this.isDummy(player)) {
+      seat = seat.partner();
+    }
+    if (seat && player != seat) throw new Error(`not ${player.value}'s turn`);
+
+    const holding = this.getHolding(player);
+    if (!holding.find((c) => c.value === card.value))
+      throw new Error(
+        `player ${player.value} does not have card ${card.value}`
+      );
+
+    const lastTrick = this.tricks.at(-1);
+    if (lastTrick && !lastTrick.complete) {
+      const lead = lastTrick.cards[0];
+      if (
+        card.suit !== lead.suit &&
+        holding.filter((c) => c.suit === lead.suit).length
+      )
+        throw new Error(
+          `card ${card.value} doesn't follow suit lead ${lead.suit.value}`
+        );
+    }
     return new Hand({
       ...this,
       play: [...this.play, card],

@@ -31,30 +31,30 @@ export class DdsWorker {
     dealPbn: DealPbn,
     target: number,
     solutions: number,
-    mode: number
+    mode: number,
   ): Promise<FutureTricks> =>
     this.init().then((dds) =>
-      dds.SolveBoardPBN(dealPbn, target, solutions, mode)
+      dds.SolveBoardPBN(dealPbn, target, solutions, mode),
     );
 
   public AnalysePlayPBN = (
     dealPbn: DealPbn,
-    playTracePbn: PlayTracePbn
+    playTracePbn: PlayTracePbn,
   ): Promise<SolvedPlay> =>
     this.init().then((dds) => dds.AnalysePlayPBN(dealPbn, playTracePbn));
 
   public CalcDDTablePBN = (
-    ddTableDeal: DdTableDealPbn
+    ddTableDeal: DdTableDealPbn,
   ): Promise<DdTableResults> =>
     this.init().then((dds) => dds.CalcDDTablePBN(ddTableDeal));
 
   public DealerPar = (
     ddTableResults: DdTableResults,
     dealer: number,
-    vulnerable: number
+    vulnerable: number,
   ): Promise<ParResultsDealer> =>
     this.init().then((dds) =>
-      dds.DealerPar(ddTableResults, dealer, vulnerable)
+      dds.DealerPar(ddTableResults, dealer, vulnerable),
     );
 }
 

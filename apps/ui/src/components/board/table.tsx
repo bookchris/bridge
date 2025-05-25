@@ -47,7 +47,7 @@ export function TableContextProvider({ table }: { table: Table }) {
         }
       }
     },
-    [bid, playingAs, table]
+    [bid, playingAs, table],
   );
 
   const [play, , playError] = usePlay(table.id);
@@ -62,7 +62,7 @@ export function TableContextProvider({ table }: { table: Table }) {
         }
       }
     },
-    [play, playingAs, table]
+    [play, playingAs, table],
   );
 
   const value: TableContextType = useMemo(
@@ -72,7 +72,7 @@ export function TableContextProvider({ table }: { table: Table }) {
       bid: preBid,
       play: prePlay,
     }),
-    [playingAs, pre, preBid, prePlay, table]
+    [playingAs, pre, preBid, prePlay, table],
   );
 
   return (

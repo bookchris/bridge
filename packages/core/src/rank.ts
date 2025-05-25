@@ -2,7 +2,7 @@ const ranks = "23456789TJQKA";
 
 export class Rank {
   constructor(public readonly value: string) {
-    if (value.length != 1 || !ranks.includes(value)) {
+    if (!ranks.includes(value)) {
       throw new Error("Invalid value passed to Rank: " + value);
     }
   }

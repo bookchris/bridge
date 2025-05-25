@@ -41,25 +41,25 @@ export function HandCard({ hand, ...cardProps }: HandCardProps) {
         )}
         <Stack sx={{ p: 1 }}>
           <Typography variant="h6">
-            Declaring: {seatString(hand.contract.declarer)}
+            Declaring: {seatString(hand.contract?.seat)}
           </Typography>
           <Typography variant="h6">
-            {hand.contract.toString()}
+            {hand.contract?.value}
             <ResultText result={hand.result} />
           </Typography>
           <Box flexGrow={1} />
           <Typography variant="h6">
-            Dummy: {seatString(hand.contract.declarer?.partner())}
+            Dummy: {seatString(hand.contract?.seat.partner())}
           </Typography>
         </Stack>
         <Box flexGrow={1} />
         <Stack sx={{ p: 1, alignContent: "right" }}>
           <Typography variant="h6">
-            Defending: {seatString(hand.contract.declarer?.next())}
+            Defending: {seatString(hand.contract?.seat.next())}
           </Typography>
           <Box flexGrow={1} />
           <Typography variant="h6">
-            Defending: {seatString(hand.contract.declarer?.next().partner())}
+            Defending: {seatString(hand.contract?.seat.next().partner())}
           </Typography>
         </Stack>
       </Box>

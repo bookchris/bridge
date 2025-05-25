@@ -7,8 +7,6 @@ import {
   CardContent,
   Typography,
   TypographyProps,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useErrorHandler } from "react-error-boundary";
@@ -25,8 +23,6 @@ import useCallable from "../lib/useCallable";
 import { signIn, useUserContext, useUserId } from "../lib/user";
 
 export default function HomePage() {
-  const theme = useTheme();
-  const sm = useMediaQuery(theme.breakpoints.up("sm"));
   return (
     <Box sx={{ my: 2, mx: 1 }}>
       <QuickPlay />
@@ -39,7 +35,7 @@ export default function HomePage() {
 }
 
 const SectionHeader = ({ sx, ...props }: TypographyProps) => (
-  <Typography variant="h5" sx={{ my: 2 }} {...props} />
+  <Typography variant="h5" sx={{ my: 2, ...sx }} {...props} />
 );
 
 const QuickPlayButton = ({ sx, ...props }: ButtonProps) => (
@@ -88,8 +84,8 @@ function QuickPlay() {
             <QuickPlayButton
               onClick={needLogin(() =>
                 createTable({ mode: "solitaire" }).then(({ id }) =>
-                  navigate("/tables/" + id)
-                )
+                  navigate("/tables/" + id),
+                ),
               )}
             >
               Just play

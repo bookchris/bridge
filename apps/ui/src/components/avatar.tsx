@@ -146,11 +146,12 @@ function CreateUserDialog({ open }: { open: boolean }) {
   let helperText = "";
   if (loading) {
     helperText = "Checking...";
-  } else if (value.length < 3) {
-  } else if (isValid) {
-    helperText = `${value} is available!`;
-  } else if (value && !isValid) {
-    errorText = "That username is taken!";
+  } else if (value.length >= 3) {
+    if (isValid) {
+      helperText = `${value} is available!`;
+    } else if (value && !isValid) {
+      errorText = "That username is taken!";
+    }
   }
 
   return (

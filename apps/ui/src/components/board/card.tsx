@@ -1,7 +1,7 @@
 import { Card } from "@bridge/core";
 import { Box, ButtonBase, ButtonBaseProps, styled } from "@mui/material";
 import { useBoardContext } from "./board";
-import { cardColor } from "./cardText";
+import { suitColor } from "./colorText";
 
 const CardImage = styled("img")({
   display: "block",
@@ -47,7 +47,7 @@ export function PlayingCard({
     [Orientation.Left]: { width: height, height: width },
     [Orientation.Right]: { width: height, height: width },
   };
-  const color = cardColor(card);
+  const color = suitColor(card.suit);
   return (
     <ButtonBase
       {...paperProps}

@@ -30,12 +30,12 @@ export class Trick {
     this.cards.slice(1).forEach((card, i) => {
       const ws = winner.suit;
       const cs = card.suit;
-      if (ws == cs) {
+      if (ws.equals(cs)) {
         if (winner.rank.index() < card.rank.index()) {
           winner = card;
           seat = this.leader.next(i + 1);
         }
-      } else if (cs == this.trump) {
+      } else if (cs.equals(this.trump)) {
         winner = card;
         seat = this.leader.next(i + 1);
       }
