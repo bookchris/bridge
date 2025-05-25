@@ -39,7 +39,7 @@ export const usePosition = (hand: Hand) => {
       navigate,
       position,
       table?.id,
-    ]
+    ],
   );
   return { position, setPosition, variation, setVariation };
 };
@@ -56,6 +56,6 @@ export function useNavigateToHand() {
         },
         replace: true,
       }),
-    []
+    [location.state, navigate],
   );
 }

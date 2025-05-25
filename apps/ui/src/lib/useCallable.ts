@@ -3,14 +3,14 @@ import { useCallback, useState } from "react";
 
 export type HttpsCallableHook<
   RequestData = unknown,
-  ResponseData = unknown
+  ResponseData = unknown,
 > = Readonly<
   [(data: RequestData) => Promise<ResponseData>, boolean, Error | undefined]
 >;
 
 export default <RequestData = unknown, ResponseData = unknown>(
   functions: Functions,
-  name: string
+  name: string,
 ): HttpsCallableHook<RequestData, ResponseData> => {
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -19,7 +19,7 @@ export default <RequestData = unknown, ResponseData = unknown>(
     async (data: RequestData): Promise<ResponseData> => {
       const callable = httpsCallableFromURL<RequestData, ResponseData>(
         functions,
-        `https://${name}-wrqv6ob42a-uc.a.run.app/${name}`
+        `https://${name}-wrqv6ob42a-uc.a.run.app/${name}`,
       );
       setLoading(true);
       setError(undefined);
@@ -33,7 +33,7 @@ export default <RequestData = unknown, ResponseData = unknown>(
         setLoading(false);
       }
     },
-    [functions, name]
+    [functions, name],
   );
 
   return [callCallable, loading, error] as const;

@@ -20,6 +20,10 @@ export class Suit {
   index() {
     return suits.indexOf(this.value);
   }
+
+  equals(s: Suit): boolean {
+    return this.value === s.value;
+  }
 }
 
 export const AllSuits = suits.map((s) => new Suit(s));

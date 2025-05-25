@@ -14,7 +14,7 @@ import { BidBox } from "./bidBox";
 import { BiddingCard } from "./biddingCard";
 import { ContractCard } from "./contractCard";
 import { Controls } from "./controls";
-import { DoubleDummyTableCard } from "./doubelDummyTableCard";
+import { DoubleDummyTableCard } from "./ddTableCard";
 import { Holding } from "./holding";
 import { Play } from "./playCard";
 import { PlayerBox } from "./playerBox";
@@ -93,7 +93,18 @@ export function Board({ hand, live, analysis, playingAs }: BoardProps) {
       variation,
       setVariation,
     }),
-    [width, hand, handAt, playingAs, live, position, setPosition]
+    [
+      width,
+      hand,
+      handAt,
+      playingAs,
+      live,
+      analysis,
+      position,
+      setPosition,
+      variation,
+      setVariation,
+    ],
   );
 
   const dds = useDdsSolveHand(handAt);
@@ -232,7 +243,7 @@ export function MiniBoard({
       live: !!live,
       analysis: !!analysis,
     }),
-    [hand, live]
+    [analysis, hand, live],
   );
 
   return (

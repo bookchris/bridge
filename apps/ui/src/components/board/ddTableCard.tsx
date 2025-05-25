@@ -7,8 +7,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { DoubleDummyTableAndPar, useDds } from "../../lib/useDds";
+import { ColorText } from "./colorText";
 
 export interface PlayProps {
   hand: Hand;
@@ -19,7 +20,7 @@ export function DoubleDummyTableCard({ hand }: PlayProps) {
   const [tableAndPar, setTableAndPar] = useState<DoubleDummyTableAndPar>();
   useEffect(() => {
     dds.ddsCalcTable(hand).then(setTableAndPar);
-  }, [hand]);
+  }, [dds, hand]);
 
   return (
     <Paper square>
@@ -33,7 +34,9 @@ export function DoubleDummyTableCard({ hand }: PlayProps) {
               <TableRow>
                 <TableCell />
                 {AllSuits.map((suit, i) => (
-                  <TableCell key={i}>{suit.toString()}</TableCell>
+                  <TableCell key={i}>
+                    <ColorText suit={suit}>{suit.toString()}</ColorText>
+                  </TableCell>
                 ))}
               </TableRow>
               {[Seat.North, Seat.South, Seat.East, Seat.West].map((seat, i) => (
@@ -48,7 +51,7 @@ export function DoubleDummyTableCard({ hand }: PlayProps) {
               ))}
             </TableBody>
           </Table>
-          {/* <Typography sx={{ width: "100%", textAlign: "center", m: 1 }}>
+          <Typography sx={{ width: "100%", textAlign: "center", m: 1 }}>
             Par: {tableAndPar.par.score}{" "}
             {tableAndPar.par.contracts.map((contract, i) => (
               <Fragment key={i}>
@@ -56,7 +59,7 @@ export function DoubleDummyTableCard({ hand }: PlayProps) {
                 {contract}
               </Fragment>
             ))}
-          </Typography> */}
+          </Typography>
         </>
       )}
     </Paper>

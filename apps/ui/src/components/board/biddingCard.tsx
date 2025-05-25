@@ -9,8 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import { ReactNode } from "react";
-import { BidText } from "./bidText";
 import { useBoardContext } from "./board";
+import { ColorText } from "./colorText";
 import { TableRowGrouper } from "./tableRowGrouper";
 
 export interface BiddingProps {
@@ -19,7 +19,7 @@ export interface BiddingProps {
   seat?: Seat;
 }
 
-export function BiddingCard({ hand, seat, position }: BiddingProps) {
+export function BiddingCard({ hand, position }: BiddingProps) {
   const { setPosition } = useBoardContext();
 
   const viewer = Seat.South;
@@ -42,8 +42,8 @@ export function BiddingCard({ hand, seat, position }: BiddingProps) {
           cursor: "pointer",
         }}
       >
-        <BidText bid={bid} />
-      </TableCell>
+        <ColorText suit={bid.suitBid?.suit}>{bid.value}</ColorText>
+      </TableCell>,
     );
   });
   if (hand.isBidding) {
@@ -57,7 +57,7 @@ export function BiddingCard({ hand, seat, position }: BiddingProps) {
         }}
       >
         &nbsp;
-      </TableCell>
+      </TableCell>,
     );
   }
 

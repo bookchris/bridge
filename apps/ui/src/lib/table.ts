@@ -33,7 +33,7 @@ const tableConverter: FirestoreDataConverter<Table> = {
   },
   fromFirestore(
     snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
+    options: SnapshotOptions,
   ): Table {
     const data = snapshot.data(options);
     const hand = Hand.fromJson(data);
@@ -47,13 +47,13 @@ const tableConverter: FirestoreDataConverter<Table> = {
 };
 
 export function useTable(
-  tableId: string
+  tableId: string,
 ): [Table | undefined, boolean, Error | undefined] {
   const [table, tableLoading, tableError] = useDocumentData<Table>(
-    doc(firestore, "tables", tableId).withConverter(tableConverter)
+    doc(firestore, "tables", tableId).withConverter(tableConverter),
   );
   const [handJson, handLoading, handError] = useObjectVal<HandJson>(
-    ref(database, "tables/" + tableId)
+    ref(database, "tables/" + tableId),
   );
   if (!table) {
     return [undefined, tableLoading, tableError];
@@ -76,7 +76,7 @@ export function useMyTableList() {
   const { user } = useUserContext();
   const ref = query(
     collection(firestore, "tables").withConverter(tableConverter),
-    where("uids", "array-contains", user?.uid || "")
+    where("uids", "array-contains", user?.uid || ""),
   );
 
   return useCollectionData<Table>(ref);
@@ -88,8 +88,8 @@ export function useBid(tableId: string): HttpsCallableHook<Bid, void> {
     TableBidResponse
   >(functions, "tablebid");
   const run = useCallback(
-    (bid: Bid) => internalRun({ tableId: tableId, bid: bid.toJson() }),
-    [internalRun, tableId]
+    (bid: Bid) => internalRun({ tableId: tableId, bid: bid.value }),
+    [internalRun, tableId],
   );
   return [run, inProgress, error];
 }
@@ -101,7 +101,7 @@ export function usePlay(tableId: string): HttpsCallableHook<Card, void> {
   >(functions, "tableplay");
   const run = useCallback(
     (card: Card) => internalRun({ tableId: tableId, card: card.value }),
-    [internalRun, tableId]
+    [internalRun, tableId],
   );
   return [run, inProgress, error];
 }
@@ -112,7 +112,7 @@ export class Table extends Hand {
   readonly created?: Date;
   constructor(
     hand: Hand,
-    props: { id: string; uids: string[]; created?: Date }
+    props: { id: string; uids: string[]; created?: Date },
   ) {
     super({ ...hand });
     this.id = props.id;

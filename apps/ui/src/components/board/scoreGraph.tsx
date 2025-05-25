@@ -38,21 +38,26 @@ export interface ScoreGraphProps {
 export function ScoreGraph({ hand, position, setPosition }: ScoreGraphProps) {
   const dds = useDds();
   const [data, setData] = useState<Payload[]>();
+
   useEffect(() => {
-    const need = 6 + hand.contract.suitBid?.level;
+    if (!hand.contract) return;
+
+    const need = 6 + hand.contract.level;
     dds.ddsAnalysePlay(hand).then((analysis) => {
       setData(
         analysis?.tricks.map((t, i) => ({
           label:
             i == 0
-              ? hand.contract.toString()
+              ? hand.contract.value
               : hand.play[i - 1].toString() || "none",
           position: hand.bidding.length + i,
           score: t - need,
-        }))
+        })),
       );
     });
-  }, [hand]);
+  }, [dds, hand]);
+
+  if (!hand.contract) return <div />;
 
   return (
     <Paper square>
@@ -62,11 +67,7 @@ export function ScoreGraph({ hand, position, setPosition }: ScoreGraphProps) {
       <Paper sx={{ width: "100%", height: 150, p: 2 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <ReferenceLine
-              y={0}
-              stroke="red"
-              label={hand.contract.toString()}
-            />
+            <ReferenceLine y={0} stroke="red" label={hand.contract.value} />
             <Line
               dot={(props) => (
                 <CustomizedDot

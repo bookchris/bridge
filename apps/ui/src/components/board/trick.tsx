@@ -68,6 +68,6 @@ const OneTrick = forwardRef<HTMLDivElement, { trick: CoreTrick }>(
         ))}
       </Box>
     );
-  }
+  },
 );
 OneTrick.displayName = "OneTrick";

@@ -12,6 +12,12 @@ export class Seat {
     }
   }
 
+  static fromChar(c: string): Seat {
+    const value = seats.find((s) => s[0] === c);
+    if (!value) throw new Error("Invalid seat character: " + c);
+    return new Seat(value);
+  }
+
   toChar(): string {
     return this.value[0];
   }

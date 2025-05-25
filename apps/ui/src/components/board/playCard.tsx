@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useBoardContext } from "./board";
-import { CardText } from "./cardText";
+import { ColorText } from "./colorText";
 
 export interface PlayProps {
   hand: Hand;
@@ -21,7 +21,7 @@ export function Play({ hand, position }: PlayProps) {
 
   const highlighted = position - hand.bidding.length;
   const tricks = [...hand.tricks];
-  const trump = hand.contract.suitBid?.suit;
+  const trump = hand.contract?.suit;
   if (!trump) throw new Error("expected contract with suit");
   const openingLeader = hand.openingLeader;
   if (!openingLeader) throw new Error("expected opening leader");
@@ -61,7 +61,7 @@ export function Play({ hand, position }: PlayProps) {
                     cursor: "pointer",
                   }}
                 >
-                  <CardText card={card} />
+                  <ColorText suit={card.suit}>{card.toString()}</ColorText>
                 </TableCell>
               ))}
               {Array(4 - trick.cards.length)

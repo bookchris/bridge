@@ -33,21 +33,21 @@ export function Controls({ hand, position, setPosition }: ControlsProps) {
 
   const prev = useCallback(
     () => setPosition((p) => Math.max(0, p - 1)),
-    [setPosition]
+    [setPosition],
   );
   const next = useCallback(
     () => setPosition((p) => Math.min(hand.positions, p + 1)),
-    [hand.positions, setPosition]
+    [hand.positions, setPosition],
   );
   const prevPosition = hand.previousTurn(position);
   const prevSeat = useCallback(
     () => setPosition((p) => (prevPosition >= 0 ? prevPosition : p)),
-    [prevPosition, setPosition]
+    [prevPosition, setPosition],
   );
   const nextPosition = hand.nextTurn(position);
   const nextSeat = useCallback(
     () => setPosition((p) => (nextPosition >= 0 ? nextPosition : p)),
-    [nextPosition, setPosition]
+    [nextPosition, setPosition],
   );
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement>();

@@ -13,8 +13,7 @@ export interface HoldingProps {
 }
 
 export function Holding({ seat, nextCard, dds }: HoldingProps) {
-  const { width, hand, handAt, live, variation, setVariation } =
-    useBoardContext();
+  const { width, handAt, live, setVariation } = useBoardContext();
   const { play, playingAs } = useTableContext();
   const margin = width / 13;
   const cards = handAt.getHolding(seat);
@@ -22,13 +21,16 @@ export function Holding({ seat, nextCard, dds }: HoldingProps) {
   const isPlayer = playingAs === seat;
   const isDummy = handAt.isDummy(seat);
 
-  const onClick = useCallback((card: Card) => {
-    if (play) {
-      play(card);
-    } else {
-      setVariation((list) => [...list, card]);
-    }
-  }, []);
+  const onClick = useCallback(
+    (card: Card) => {
+      if (play) {
+        play(card);
+      } else {
+        setVariation((list) => [...list, card]);
+      }
+    },
+    [play, setVariation],
+  );
 
   const paperSx = {
     [Seat.West.toString()]: {

@@ -26,7 +26,7 @@ const userConverter: FirestoreDataConverter<StoredUser> = {
   },
   fromFirestore(
     snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
+    options: SnapshotOptions,
   ): StoredUser {
     return snapshot.data(options) as StoredUser;
   },
@@ -93,7 +93,7 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
       username,
       creating,
     }),
-    [creating, user, username]
+    [creating, user, username],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
